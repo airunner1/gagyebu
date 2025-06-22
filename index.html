@@ -1,125 +1,116 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Real-World Budget App</title>
-<script src="https://cdn.tailwindcss.com/3.4.16"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#4F46E5',secondary:'#10B981'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
-<style>
-body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
-.hide-arrows::-webkit-outer-spin-button, .hide-arrows::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.hide-arrows { -moz-appearance: textfield; }
-/* 버튼 클릭 시 미세한 애니메이션 효과 */
-button:active { transform: scale(0.95); transition: transform 0.1s ease-in-out; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Budget App</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#4F46E5', secondary: '#10B981' },
+                    borderRadius: { 'button': '8px' }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
+        .hide-arrows::-webkit-outer-spin-button, .hide-arrows::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .hide-arrows { -moz-appearance: textfield; }
+        /* 버튼 클릭 시 피드백을 위한 미세한 애니메이션 */
+        button:active, [data-tab]:active { transform: scale(0.96); transition: transform 0.1s; }
+        /* 로딩 스피너 */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4F46E5; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body class="bg-gray-50">
-<div class="fixed top-0 w-full bg-white shadow-sm z-50"><div class="flex items-center justify-between px-4 py-3"><div class="flex items-center"><h1 class="text-lg font-['Pacifico'] text-primary">BudgetApp</h1></div><div class="flex items-center space-x-2"><button class="w-8 h-8 flex items-center justify-center"><i class="ri-search-line ri-lg text-gray-600"></i></button><button class="w-8 h-8 flex items-center justify-center"><i class="ri-notification-3-line ri-lg text-gray-600"></i></button><button class="w-8 h-8 flex items-center justify-center"><i class="ri-menu-line ri-lg text-gray-600"></i></button></div></div></div>
+    <header class="fixed top-0 w-full bg-white shadow-sm z-50">
+        <div class="flex items-center justify-between px-4 py-3 max-w-4xl mx-auto">
+            <h1 class="text-xl font-bold text-primary">Budget App</h1>
+            <button class="w-8 h-8 flex items-center justify-center"><i class="ri-settings-3-line ri-lg text-gray-600"></i></button>
+        </div>
+    </header>
 
-<div class="pt-14 pb-28 min-h-screen">
-    <div id="dashboard-section" class="px-4 py-4">
-        <div class="flex items-center justify-between mb-4">
-            <button id="dashboard-prev-month" class="w-8 h-8 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100"><i class="ri-arrow-left-s-line ri-lg"></i></button>
-            <h2 class="text-lg font-medium" id="dashboard-month-display"></h2>
-            <button id="dashboard-next-month" class="w-8 h-8 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100"><i class="ri-arrow-right-s-line ri-lg"></i></button>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-            <p class="text-sm text-gray-500 mb-3">월별 요약</p>
-            <h1 class="text-2xl font-bold" id="total-balance">0원</h1>
-            <div class="flex justify-between mt-4">
-                <div><p class="text-xs text-gray-500">수입</p><p class="text-sm font-medium text-green-600" id="total-income">+0원</p></div>
-                <div><p class="text-xs text-gray-500">지출</p><p class="text-sm font-medium text-red-600" id="total-expense">-0원</p></div>
-            </div>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-            <h3 class="font-medium mb-4">최근 30일 지출 그래프</h3>
-            <div id="spending-chart" class="w-full h-48"></div>
-        </div>
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-medium">최근 거래 내역</h3>
-            <button id="see-all-btn" class="text-primary text-sm font-medium">전체 보기</button>
-        </div>
-        <div id="recent-transactions-container" class="bg-white rounded-lg shadow-sm divide-y"></div>
-    </div>
-
-    <div id="transactions-section" class="hidden px-4 py-4">
-        <h2 class="text-xl font-semibold mb-4">전체 거래 내역</h2>
-        <div id="transactions-filter-container" class="flex space-x-2 mb-4 overflow-x-auto pb-2"></div>
-        <div id="transactions-list-container"></div>
-    </div>
-
-    <div id="add-transaction-section" class="hidden px-4 py-4">
-        <h2 class="text-xl font-semibold mb-4">새 거래 추가</h2>
-        <form id="transaction-form">
-            <div class="mb-4">
-                <p class="text-sm text-gray-500 mb-2">거래 유형</p>
-                <div class="flex bg-gray-100 rounded-full p-1">
-                    <button type="button" data-type="expense" class="transaction-type-btn flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium">지출</button>
-                    <button type="button" data-type="income" class="transaction-type-btn flex-1 py-2 rounded-full text-gray-600 text-sm font-medium">수입</button>
+    <main class="pt-16 pb-20 min-h-screen">
+        <div class="max-w-4xl mx-auto">
+            <section id="dashboard-section" class="px-4 py-4">
+                <div class="flex items-center justify-between mb-4">
+                    <button id="dashboard-prev-month" class="p-2 rounded-full hover:bg-gray-100"><i class="ri-arrow-left-s-line ri-xl"></i></button>
+                    <h2 class="text-lg font-semibold" id="dashboard-month-display"></h2>
+                    <button id="dashboard-next-month" class="p-2 rounded-full hover:bg-gray-100"><i class="ri-arrow-right-s-line ri-xl"></i></button>
                 </div>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm text-gray-500 mb-2" for="amount">금액</label>
-                <div class="relative"><div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-500">₩</span></div><input type="number" id="amount" class="hide-arrows w-full pl-8 pr-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary" placeholder="0" required></div>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm text-gray-500 mb-2" for="date">날짜</label>
-                <input type="date" id="date" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm text-gray-500 mb-2" for="category">카테고리</label>
-                <div class="relative"><select id="category" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary appearance-none"></select><div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"><i class="ri-arrow-down-s-line text-gray-500"></i></div></div>
-            </div>
-             <div class="mb-4">
-                <label class="block text-sm text-gray-500 mb-2" for="paymentMethodText">내용</label>
-                <input type="text" id="paymentMethodText" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary" placeholder="예: 스타벅스 커피">
-            </div>
-            <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-medium">거래 저장</button>
-        </form>
-    </div>
+                <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
+                    <p class="text-sm text-gray-500 mb-2">월별 요약</p>
+                    <h2 class="text-3xl font-bold" id="total-balance">₩0</h2>
+                    <div class="flex justify-between mt-4 text-sm">
+                        <div><p class="text-gray-500">수입</p><p class="font-medium text-green-600" id="total-income">+₩0</p></div>
+                        <div class="text-right"><p class="text-gray-500">지출</p><p class="font-medium text-red-600" id="total-expense">-₩0</p></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5 mb-5">
+                    <h3 class="font-semibold mb-4">카테고리별 지출</h3>
+                    <div id="category-chart" class="w-full h-56"></div>
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-semibold">최근 거래 내역</h3>
+                    <button id="see-all-btn" class="text-primary text-sm font-medium">전체 보기</button>
+                </div>
+                <div id="recent-transactions-container" class="bg-white rounded-xl shadow-sm"></div>
+            </section>
 
-    <div id="analysis-section" class="hidden px-4 py-4">
-        <div class="flex items-center justify-between mb-4">
-            <button id="analysis-prev-month" class="w-8 h-8 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100"><i class="ri-arrow-left-s-line ri-lg"></i></button>
-            <h2 class="text-lg font-medium" id="analysis-month-display"></h2>
-            <button id="analysis-next-month" class="w-8 h-8 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100"><i class="ri-arrow-right-s-line ri-lg"></i></button>
-        </div>
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-             <h3 class="font-medium mb-4">카테고리별 지출 분석</h3>
-            <div id="category-chart" class="w-full h-64"></div>
-        </div>
-    </div>
-</div>
+            <section id="transactions-section" class="hidden px-4 py-4">
+                <h2 class="text-xl font-semibold mb-4">전체 거래 내역</h2>
+                <div id="transactions-filter-container" class="flex space-x-2 mb-4 overflow-x-auto pb-2"></div>
+                <div id="transactions-list-container"></div>
+            </section>
 
-<div class="fixed bottom-0 w-full bg-white shadow-lg border-t border-gray-200 z-50">
-    <div class="grid grid-cols-4 h-16">
-        <button data-tab="dashboard" class="flex flex-col items-center justify-center space-y-1 text-primary"><i class="ri-home-4-line ri-lg"></i><span class="text-xs font-medium">홈</span></button>
-        <button data-tab="transactions" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-list-check-2 ri-lg"></i><span class="text-xs font-medium">내역</span></button>
-        <button data-tab="add" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-add-circle-line ri-lg"></i><span class="text-xs font-medium">추가</span></button>
-        <button data-tab="analysis" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-pie-chart-line ri-lg"></i><span class="text-xs font-medium">분석</span></button>
-    </div>
-</div>
+            <section id="add-section" class="hidden px-4 py-4">
+                <h2 class="text-xl font-semibold mb-4">새 거래 추가</h2>
+                <form id="transaction-form" class="space-y-4">
+                    <div><p class="text-sm font-medium text-gray-700 mb-2">거래 유형</p><div class="flex bg-gray-100 rounded-full p-1"><button type="button" data-type="expense" class="transaction-type-btn flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium">지출</button><button type="button" data-type="income" class="transaction-type-btn flex-1 py-2 rounded-full text-gray-600 text-sm font-medium">수입</button></div></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="amount">금액</label><div class="relative"><div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">₩</div><input type="number" id="amount" class="hide-arrows w-full pl-7 pr-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary" placeholder="0" required></div></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="text">내용</label><input type="text" id="text" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary" placeholder="예: 스타벅스 커피" required></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="category">카테고리</label><div class="relative"><select id="category" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary appearance-none"></select><div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"><i class="ri-arrow-down-s-line text-gray-500"></i></div></div></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="date">날짜</label><input type="date" id="date" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary"></div>
+                    <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold !rounded-button mt-6">거래 저장</button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 w-full bg-white/80 backdrop-blur-sm shadow-lg border-t border-gray-200 z-50">
+        <div class="grid grid-cols-4 h-16 max-w-4xl mx-auto">
+            <button data-tab="dashboard" class="flex flex-col items-center justify-center space-y-1 text-primary"><i class="ri-home-4-fill ri-lg"></i><span class="text-xs font-medium">홈</span></button>
+            <button data-tab="transactions" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-list-check-2 ri-lg"></i><span class="text-xs font-medium">내역</span></button>
+            <button data-tab="add" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-add-circle-line ri-lg"></i><span class="text-xs font-medium">추가</span></button>
+            <button data-tab="analysis" class="flex flex-col items-center justify-center space-y-1 text-gray-500" disabled><i class="ri-pie-chart-line ri-lg text-gray-300"></i><span class="text-xs font-medium text-gray-300">분석</span></button>
+        </div>
+    </nav>
 
 <script>
 // =================================================================
-// Real-World Budget App - Upgraded & Stable Version
+// Dynamic Budget App - Final Version
 // =================================================================
-const ledgerApp = {
+const budgetApp = {
+    // --- Application State ---
     state: {
         transactions: [],
-        currentDate: new Date(), // The date determines which month is displayed
-        charts: { spending: null, category: null },
+        currentDate: new Date(), // Controls the currently viewed month
+        activeFilter: 'all',
+        charts: { category: null },
     },
 
+    // --- Static Configuration ---
     config: {
-        localStorageKey: 'budgetAppTransactions',
+        localStorageKey: 'budgetAppTransactions_v1',
         categories: {
             expense: [
                 { id: 'food', text: '식비', icon: 'restaurant-2' }, { id: 'transport', text: '교통', icon: 'bus' },
@@ -137,9 +128,13 @@ const ledgerApp = {
             { id: 'food', text: '식비' }, { id: 'transport', text: '교통' }, { id: 'shopping', text: '쇼핑' }
         ]
     },
+    
+    // --- DOM Element Cache ---
+    dom: {},
 
-    // --- Initialization ---
+    // --- App Initialization ---
     init() {
+        this.cacheDom();
         this.events.init();
         this.api.loadTransactions();
         this.ui.initCharts();
@@ -148,171 +143,188 @@ const ledgerApp = {
         console.log("Budget App Initialized");
     },
     
-    // --- State Management & Core Logic ---
+    cacheDom() {
+        this.dom = {
+            sections: {
+                dashboard: document.getElementById('dashboard-section'),
+                transactions: document.getElementById('transactions-section'),
+                add: document.getElementById('add-section'),
+            },
+            nav: document.querySelector('nav'),
+            // Dashboard elements
+            dashboardDisplay: document.getElementById('dashboard-month-display'),
+            totalBalance: document.getElementById('total-balance'),
+            totalIncome: document.getElementById('total-income'),
+            totalExpense: document.getElementById('total-expense'),
+            recentTransactions: document.getElementById('recent-transactions-container'),
+            categoryChart: document.getElementById('category-chart'),
+            // Transactions elements
+            filterContainer: document.getElementById('transactions-filter-container'),
+            listContainer: document.getElementById('transactions-list-container'),
+            // Add form elements
+            form: document.getElementById('transaction-form'),
+            typeButtons: document.querySelectorAll('.transaction-type-btn'),
+            amountInput: document.getElementById('amount'),
+            textInput: document.getElementById('text'),
+            categorySelect: document.getElementById('category'),
+            dateInput: document.getElementById('date'),
+        };
+    },
+
+    // --- Core Logic ---
     core: {
         addTransaction(newTx) {
-            ledgerApp.state.transactions.unshift(newTx); // Add to the beginning
-            ledgerApp.api.saveTransactions();
+            budgetApp.state.transactions.unshift(newTx);
+            budgetApp.state.transactions.sort((a,b) => new Date(b.date) - new Date(a.date));
+            budgetApp.api.saveTransactions();
         },
         getTransactionsForMonth(date) {
             const year = date.getFullYear();
             const month = date.getMonth();
-            return ledgerApp.state.transactions.filter(t => {
+            return budgetApp.state.transactions.filter(t => {
                 const txDate = new Date(t.date);
                 return txDate.getFullYear() === year && txDate.getMonth() === month;
             });
         },
     },
 
-    // --- API & Data Persistence ---
+    // --- Data Persistence ---
     api: {
         loadTransactions() {
-            const stored = localStorage.getItem(ledgerApp.config.localStorageKey);
+            const stored = localStorage.getItem(budgetApp.config.localStorageKey);
             if (stored) {
-                ledgerApp.state.transactions = JSON.parse(stored);
+                budgetApp.state.transactions = JSON.parse(stored);
             } else {
-                // Initial dummy data
-                ledgerApp.state.transactions = [
-                    { id: 'tx1', type: 'expense', amount: 8500, date: new Date().toISOString().slice(0,10), category: 'food', text: '점심(부대찌개)' },
-                    { id: 'tx2', type: 'expense', amount: 2500, date: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0,10), category: 'transport', text: '버스요금' },
-                    { id: 'tx3', type: 'income', amount: 2500000, date: new Date(new Date().setDate(new Date().getDate() - 2)).toISOString().slice(0,10), category: 'salary', text: '6월 월급' }
+                const today = new Date();
+                const yesterday = new Date(new Date().setDate(today.getDate() - 1));
+                budgetApp.state.transactions = [
+                    { id: `tx${Date.now()+1}`, type: 'expense', amount: 8500, date: today.toISOString().slice(0,10), category: 'food', text: '점심 (부대찌개)' },
+                    { id: `tx${Date.now()+2}`, type: 'expense', amount: 2500, date: yesterday.toISOString().slice(0,10), category: 'transport', text: '버스 요금' },
+                    { id: `tx${Date.now()+3}`, type: 'income', amount: 2500000, date: new Date(new Date().setDate(today.getDate() - 2)).toISOString().slice(0,10), category: 'salary', text: `${today.getMonth()+1}월 급여` }
                 ];
                 this.saveTransactions();
             }
         },
         saveTransactions() {
-            localStorage.setItem(ledgerApp.config.localStorageKey, JSON.stringify(ledgerApp.state.transactions));
+            localStorage.setItem(budgetApp.config.localStorageKey, JSON.stringify(budgetApp.state.transactions));
         },
     },
 
     // --- UI Rendering ---
     ui: {
         showSection(sectionId) {
-            document.querySelectorAll('.pt-14 > div').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+            Object.values(budgetApp.dom.sections).forEach(s => s.classList.add('hidden'));
+            budgetApp.dom.sections[sectionId].classList.remove('hidden');
 
-            document.querySelectorAll('[data-tab]').forEach(t => t.classList.replace('text-primary', 'text-gray-500'));
-            document.querySelector(`[data-tab="${sectionId}"]`)?.classList.replace('text-gray-500', 'text-primary');
-            
-            if (sectionId === 'dashboard') this.renderDashboard();
-            if (sectionId === 'transactions') this.renderTransactions();
-            if (sectionId === 'add') this.prepareAddForm();
-            if (sectionId === 'analysis') this.renderAnalysis();
+            budgetApp.dom.nav.querySelectorAll('[data-tab]').forEach(t => t.classList.replace('text-primary', 'text-gray-500'));
+            const activeTab = budgetApp.dom.nav.querySelector(`[data-tab="${sectionId}"]`);
+            if (activeTab) activeTab.classList.replace('text-gray-500', 'text-primary');
+
+            // Render content for the new section
+            if (this.render[sectionId]) this.render[sectionId]();
         },
-        renderDashboard() {
-            const { currentDate } = ledgerApp.state;
-            const monthlyTxs = ledgerApp.core.getTransactionsForMonth(currentDate);
+        render: {
+            dashboard() {
+                const { currentDate, transactions } = budgetApp.state;
+                const monthlyTxs = budgetApp.core.getTransactionsForMonth(currentDate);
 
-            let monthIncome = 0, monthExpense = 0;
-            monthlyTxs.forEach(t => t.type === 'income' ? monthIncome += t.amount : monthExpense += t.amount);
-            
-            document.getElementById('dashboard-month-display').textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월`;
-            document.getElementById('total-balance').textContent = `₩${(monthIncome - monthExpense).toLocaleString()}`;
-            document.getElementById('total-income').textContent = `+₩${monthIncome.toLocaleString()}`;
-            document.getElementById('total-expense').textContent = `-₩${monthExpense.toLocaleString()}`;
+                let monthIncome = 0, monthExpense = 0;
+                monthlyTxs.forEach(t => t.type === 'income' ? monthIncome += t.amount : monthExpense += t.amount);
+                
+                budgetApp.dom.dashboardDisplay.textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월`;
+                budgetApp.dom.totalBalance.textContent = `₩${(monthIncome - monthExpense).toLocaleString()}`;
+                budgetApp.dom.totalIncome.textContent = `+₩${monthIncome.toLocaleString()}`;
+                budgetApp.dom.totalExpense.textContent = `-₩${monthExpense.toLocaleString()}`;
 
-            // Recent Transactions
-            const recentTxs = ledgerApp.state.transactions.slice(0, 5);
-            const recentContainer = document.getElementById('recent-transactions-container');
-            if (recentTxs.length === 0) {
-                 recentContainer.innerHTML = `<div class="text-center py-8 text-gray-500">거래 내역이 없습니다.</div>`;
-            } else {
-                recentContainer.innerHTML = recentTxs.map(t => this.templates.transactionItem(t)).join('');
-            }
-            
-            // Spending Chart (Last 30 days)
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(new Date().getDate() - 30);
-            const spendingData = {};
-            for(let i=0; i<30; i++) {
-                const d = new Date();
-                d.setDate(thirtyDaysAgo.getDate() + i);
-                spendingData[d.toISOString().slice(0,10)] = 0;
-            }
-            ledgerApp.state.transactions.forEach(t => {
-                if (t.type === 'expense' && spendingData.hasOwnProperty(t.date)) {
-                    spendingData[t.date] += t.amount;
+                const recentTxs = transactions.slice(0, 5);
+                if (recentTxs.length === 0) {
+                    budgetApp.dom.recentTransactions.innerHTML = `<div class="text-center p-8 text-gray-500">거래 내역이 없습니다.</div>`;
+                } else {
+                    budgetApp.dom.recentTransactions.innerHTML = `<div class="divide-y divide-gray-100">${recentTxs.map(t => budgetApp.ui.templates.transactionItem(t)).join('')}</div>`;
                 }
-            });
-            ledgerApp.state.charts.spending.setOption({
-                xAxis: { data: Object.keys(spendingData).map(d => d.slice(5)) },
-                series: [{ data: Object.values(spendingData) }]
-            });
-        },
-        renderTransactions(filter = 'all') {
-            const listContainer = document.getElementById('transactions-list-container');
-            const filteredTxs = ledgerApp.state.transactions.filter(t => {
-                if (filter === 'all') return true;
-                if (filter === 'income' || filter === 'expense') return t.type === filter;
-                return t.category === filter;
-            });
-            
-            if (filteredTxs.length === 0) {
-                listContainer.innerHTML = `<div class="text-center py-16 text-gray-500">해당 내역이 없습니다.</div>`;
-            } else {
-                listContainer.innerHTML = filteredTxs.map(t => this.templates.transactionItem(t)).join('');
+                
+                // Render category chart for the current month's expenses
+                const expenseByCategory = {};
+                monthlyTxs.filter(t => t.type === 'expense').forEach(t => {
+                    expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
+                });
+                const chartData = Object.entries(expenseByCategory).map(([catId, amount]) => {
+                    const category = budgetApp.config.categories.expense.find(c => c.id === catId);
+                    return { name: category.text, value: amount };
+                });
+                budgetApp.state.charts.category.setOption({ series: [{ data: chartData }] });
+            },
+            transactions() {
+                const { transactions, activeFilter } = budgetApp.state;
+                const filteredTxs = transactions.filter(t => {
+                    if (activeFilter === 'all') return true;
+                    if (activeFilter === 'income' || activeFilter === 'expense') return t.type === activeFilter;
+                    return t.category === activeFilter;
+                });
+                
+                if (filteredTxs.length === 0) {
+                    budgetApp.dom.listContainer.innerHTML = `<div class="text-center py-16 text-gray-500">해당 내역이 없습니다.</div>`;
+                } else {
+                    const grouped = filteredTxs.reduce((acc, tx) => {
+                        const date = tx.date;
+                        if (!acc[date]) acc[date] = [];
+                        acc[date].push(tx);
+                        return acc;
+                    }, {});
+
+                    let html = '';
+                    for (const date in grouped) {
+                        html += `
+                            <div class="mb-4">
+                                <h3 class="font-semibold text-gray-600 px-1 mb-2">${new Date(date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}</h3>
+                                <div class="bg-white rounded-xl shadow-sm divide-y divide-gray-100">
+                                    ${grouped[date].map(tx => budgetApp.ui.templates.transactionItem(tx)).join('')}
+                                </div>
+                            </div>`;
+                    }
+                    budgetApp.dom.listContainer.innerHTML = html;
+                }
+            },
+            add() {
+                budgetApp.dom.form.reset();
+                budgetApp.dom.dateInput.value = new Date().toISOString().slice(0, 10);
+                budgetApp.ui.updateCategoryOptions('expense');
+            },
+            analysis() {
+                // Placeholder for analysis section if it were to be enabled
             }
-        },
-        renderAnalysis() {
-            const { currentDate } = ledgerApp.state;
-            const monthlyTxs = ledgerApp.core.getTransactionsForMonth(currentDate);
-
-            document.getElementById('analysis-month-display').textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월`;
-
-            const expenseByCategory = {};
-            monthlyTxs.filter(t => t.type === 'expense').forEach(t => {
-                expenseByCategory[t.category] = (expenseByCategory[t.category] || 0) + t.amount;
-            });
-
-            const chartData = Object.entries(expenseByCategory).map(([catId, amount]) => {
-                const category = ledgerApp.config.categories.expense.find(c => c.id === catId);
-                return { name: category.text, value: amount };
-            });
-            
-            ledgerApp.state.charts.category.setOption({ series: [{ data: chartData }] });
-        },
-        prepareAddForm() {
-            document.getElementById('transaction-form').reset();
-            document.getElementById('date').value = new Date().toISOString().slice(0, 10);
-            this.updateCategoryOptions('expense');
-        },
-        updateCategoryOptions(type) {
-            const categories = ledgerApp.config.categories[type];
-            document.getElementById('category').innerHTML = categories.map(c => `<option value="${c.id}">${c.text}</option>`).join('');
         },
         populateFilters() {
-            document.getElementById('transactions-filter-container').innerHTML = ledgerApp.config.filters.map((f, i) =>
-                `<button data-filter="${f.id}" class="filter-btn whitespace-nowrap px-4 py-2 text-sm rounded-full ${i === 0 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}">${f.text}</button>`
+            this.dom.filterContainer.innerHTML = budgetApp.config.filters.map((f, i) =>
+                `<button data-filter="${f.id}" class="filter-btn whitespace-nowrap px-4 py-2 text-sm font-medium rounded-full ${i === 0 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}">${f.text}</button>`
             ).join('');
         },
+        updateCategoryOptions(type) {
+            const categories = budgetApp.config.categories[type];
+            this.dom.categorySelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.text}</option>`).join('');
+        },
         initCharts() {
-            this.charts.spending = echarts.init(document.getElementById('spending-chart'));
-            this.charts.spending.setOption({
-                tooltip: { trigger: 'axis', formatter: p => `₩${p[0].value.toLocaleString()}` },
-                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
-                xAxis: { type: 'category', axisLine: { lineStyle: { color: '#EAEAEA' }}, axisLabel: { show: false }},
-                yAxis: { type: 'value', axisLine: { show: false }, axisLabel: { color: '#999' }},
-                series: [{ type: 'line', smooth: true, showSymbol: false, data: [] }]
-            });
-            this.charts.category = echarts.init(document.getElementById('category-chart'));
+            const chartDom = this.dom.categoryChart;
+            if (!chartDom) return;
+            this.charts = {
+                category: echarts.init(chartDom)
+            };
             this.charts.category.setOption({
                 tooltip: { trigger: 'item', formatter: p => `${p.name}:<br/><b>₩${p.value.toLocaleString()}</b> (${p.percent}%)` },
-                series: [{ type: 'pie', radius: ['40%', '70%'], avoidLabelOverlap: true, label: { show: false }, emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } }, data: [] }]
+                series: [{ type: 'pie', radius: ['50%', '80%'], avoidLabelOverlap: true, itemStyle: { borderRadius: 5, borderColor: '#fff', borderWidth: 2 }, label: { show: false }, data: [] }]
             });
-            ledgerApp.state.charts = this.charts;
+            budgetApp.state.charts = this.charts;
         },
         templates: {
             transactionItem(t) {
-                const category = ledgerApp.config.categories[t.type].find(c => c.id === t.category) || {};
+                const allCategories = [...budgetApp.config.categories.expense, ...budgetApp.config.categories.income];
+                const category = allCategories.find(c => c.id === t.category) || {};
                 const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
                 return `
                     <div class="flex items-center p-4">
-                        <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-lg mr-4"><i class="ri-${category.icon}-line ri-lg text-gray-700"></i></div>
-                        <div class="flex-1">
-                            <p class="font-medium">${t.text}</p>
-                            <p class="text-sm text-gray-500">${t.date}</p>
-                        </div>
-                        <p class="font-bold ${color}">${t.type === 'income' ? '+' : '-'}₩${t.amount.toLocaleString()}</p>
+                        <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl mr-4"><i class="ri-${category.icon}-line ri-lg text-gray-700"></i></div>
+                        <div class="flex-1"><p class="font-medium leading-tight">${t.text}</p><p class="text-sm text-gray-500">${new Date(t.date).toLocaleDateString('ko-KR', {month:'long', day:'numeric'})}</p></div>
+                        <p class="font-bold text-lg ${color}">${t.type === 'income' ? '+' : '-'}₩${t.amount.toLocaleString()}</p>
                     </div>`;
             }
         }
@@ -321,75 +333,62 @@ const ledgerApp = {
     // --- Event Handling ---
     events: {
         init() {
-            // Tab Navigation
-            document.querySelector('.grid-cols-4').addEventListener('click', e => {
-                const tab = e.target.closest('button');
-                if (tab) ledgerApp.ui.showSection(tab.dataset.tab);
+            budgetApp.dom.nav.addEventListener('click', e => {
+                const tab = e.target.closest('button[data-tab]');
+                if (tab && !tab.disabled) budgetApp.ui.showSection(tab.dataset.tab);
             });
-
-            // Month Navigation
-            document.getElementById('dashboard-prev-month').addEventListener('click', () => this.changeMonth(-1, 'dashboard'));
-            document.getElementById('dashboard-next-month').addEventListener('click', () => this.changeMonth(1, 'dashboard'));
-            document.getElementById('analysis-prev-month').addEventListener('click', () => this.changeMonth(-1, 'analysis'));
-            document.getElementById('analysis-next-month').addEventListener('click', () => this.changeMonth(1, 'analysis'));
-
-            // "See All" button
-            document.getElementById('see-all-btn').addEventListener('click', () => ledgerApp.ui.showSection('transactions'));
-            
-            // Transaction Form
-            document.getElementById('transaction-form').addEventListener('submit', this.handleFormSubmit);
-            document.querySelectorAll('.transaction-type-btn').forEach(btn => btn.addEventListener('click', this.handleTypeChange));
-
-            // Filter Buttons
-            document.getElementById('transactions-filter-container').addEventListener('click', this.handleFilterClick);
+            document.getElementById('dashboard-prev-month').addEventListener('click', () => this.changeMonth(-1));
+            document.getElementById('dashboard-next-month').addEventListener('click', () => this.changeMonth(1));
+            document.getElementById('see-all-btn').addEventListener('click', () => budgetApp.ui.showSection('transactions'));
+            budgetApp.dom.form.addEventListener('submit', this.handleFormSubmit);
+            budgetApp.dom.typeButtons.forEach(btn => btn.addEventListener('click', this.handleTypeChange));
+            budgetApp.dom.filterContainer.addEventListener('click', this.handleFilterClick);
         },
-        changeMonth(direction, view) {
-            ledgerApp.state.currentDate.setMonth(ledgerApp.state.currentDate.getMonth() + direction);
-            if (view === 'dashboard') ledgerApp.ui.renderDashboard();
-            else if (view === 'analysis') ledgerApp.ui.renderAnalysis();
+        changeMonth(direction) {
+            budgetApp.state.currentDate.setMonth(budgetApp.state.currentDate.getMonth() + direction, 1);
+            budgetApp.ui.render.dashboard();
         },
         handleFormSubmit(e) {
             e.preventDefault();
-            const form = e.target;
-            const amount = parseInt(form.amount.value);
-            if (!amount || amount <= 0) {
-                alert("유효한 금액을 입력해주세요.");
-                return;
+            const form = budgetApp.dom;
+            const amount = parseInt(form.amountInput.value);
+            if (!amount || amount <= 0 || !form.textInput.value) {
+                alert("금액과 내용을 올바르게 입력해주세요."); return;
             }
             const type = document.querySelector('.transaction-type-btn.bg-primary').dataset.type;
             const newTx = {
-                id: `tx${Date.now()}`,
-                type: type,
-                amount: amount,
-                date: form.date.value,
-                category: form.category.value,
-                text: form.paymentMethodText.value || form.category.options[form.category.selectedIndex].text
+                id: `tx${Date.now()}`, type, amount, date: form.dateInput.value,
+                category: form.categorySelect.value, text: form.textInput.value,
             };
-            ledgerApp.core.addTransaction(newTx);
+            budgetApp.core.addTransaction(newTx);
             alert("저장되었습니다.");
-            ledgerApp.ui.showSection('transactions'); // Show the list after adding
+            budgetApp.ui.showSection('dashboard');
         },
         handleTypeChange(e) {
             const selectedType = e.target.dataset.type;
-            document.querySelectorAll('.transaction-type-btn').forEach(btn => {
-                btn.classList.remove('bg-primary', 'text-white');
-                btn.classList.add('text-gray-600');
+            budgetApp.dom.typeButtons.forEach(btn => {
+                btn.classList.toggle('bg-primary', btn.dataset.type === selectedType);
+                btn.classList.toggle('text-white', btn.dataset.type === selectedType);
+                btn.classList.toggle('text-gray-600', btn.dataset.type !== selectedType);
             });
-            e.target.classList.add('bg-primary', 'text-white');
-            ledgerApp.ui.updateCategoryOptions(selectedType);
+            budgetApp.ui.updateCategoryOptions(selectedType);
         },
         handleFilterClick(e) {
             const btn = e.target.closest('button');
             if(!btn) return;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.replace('bg-primary', 'bg-gray-200'), b.classList.replace('text-white','text-gray-700'));
+            budgetApp.dom.filterContainer.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.replace('bg-primary', 'bg-gray-200');
+                b.classList.replace('text-white','text-gray-700');
+            });
             btn.classList.replace('bg-gray-200','bg-primary');
             btn.classList.replace('text-gray-700','text-white');
-            ledgerApp.ui.renderTransactions(btn.dataset.filter);
+            budgetApp.state.activeFilter = btn.dataset.filter;
+            budgetApp.ui.render.transactions();
         }
     }
 };
 
-ledgerApp.init();
+document.addEventListener('DOMContentLoaded', () => budgetApp.init());
 </script>
 </body>
 </html>
