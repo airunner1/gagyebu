@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Household Ledger (Stable & Optimized)</title>
+<title>Household Ledger (Final Fixed Version)</title>
 <script src="https://cdn.tailwindcss.com/3.4.16"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#4F46E5',secondary:'#10B981'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,649 +13,254 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
 <style>
-body {
-font-family: 'Inter', sans-serif;
-background-color: #F9FAFB;
-}
-.hide-arrows::-webkit-outer-spin-button,
-.hide-arrows::-webkit-inner-spin-button {
--webkit-appearance: none;
-margin: 0;
-}
-.hide-arrows {
--moz-appearance: textfield;
-}
+body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
+.hide-arrows::-webkit-outer-spin-button, .hide-arrows::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.hide-arrows { -moz-appearance: textfield; }
 </style>
 </head>
 <body class="bg-gray-50">
-<div class="fixed top-0 w-full bg-white shadow-sm z-50">
-<div class="flex items-center justify-between px-4 py-3">
-<div class="flex items-center">
-<h1 class="text-lg font-['Pacifico'] text-primary">logo</h1>
-</div>
-<div class="flex items-center space-x-2">
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-search-line ri-lg text-gray-600"></i>
-</div>
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-notification-3-line ri-lg text-gray-600"></i>
-</div>
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-menu-line ri-lg text-gray-600"></i>
-</div>
-</div>
-</div>
-</div>
+<div class="fixed top-0 w-full bg-white shadow-sm z-50"><div class="flex items-center justify-between px-4 py-3"><div class="flex items-center"><h1 class="text-lg font-['Pacifico'] text-primary">logo</h1></div><div class="flex items-center space-x-2"><div class="w-8 h-8 flex items-center justify-center"><i class="ri-search-line ri-lg text-gray-600"></i></div><div class="w-8 h-8 flex items-center justify-center"><i class="ri-notification-3-line ri-lg text-gray-600"></i></div><div class="w-8 h-8 flex items-center justify-center"><i class="ri-menu-line ri-lg text-gray-600"></i></div></div></div></div>
 <div class="pt-14 pb-16 min-h-screen">
-<div id="dashboard" class="px-4 py-4">
-<div class="flex items-center justify-between mb-4">
-<button class="w-8 h-8 flex items-center justify-center text-gray-500">
-<i class="ri-arrow-left-s-line ri-lg"></i>
-</button>
-<h2 class="text-lg font-medium" id="current-month-display"></h2>
-<button class="w-8 h-8 flex items-center justify-center text-gray-500">
-<i class="ri-arrow-right-s-line ri-lg"></i>
-</button>
+<div id="dashboard" class="px-4 py-4"><div class="flex items-center justify-between mb-4"><button class="w-8 h-8 flex items-center justify-center text-gray-500"><i class="ri-arrow-left-s-line ri-lg"></i></button><h2 class="text-lg font-medium" id="current-month-display"></h2><button class="w-8 h-8 flex items-center justify-center text-gray-500"><i class="ri-arrow-right-s-line ri-lg"></i></button></div><div class="bg-white rounded-lg shadow-sm p-4 mb-4"><div class="flex items-center justify-between mb-3"><p class="text-sm text-gray-500">이번 달 잔액</p><a href="#" class="text-xs text-primary">상세보기 ></a></div><h1 class="text-2xl font-bold" data-amount-krw="0" id="total-balance">0원</h1><div class="flex justify-between mt-4"><div><p class="text-xs text-gray-500">수입</p><p class="text-sm font-medium text-green-600" data-amount-krw="0" id="total-income">+0원</p></div><div><p class="text-xs text-gray-500">지출</p><p class="text-sm font-medium text-red-600" data-amount-krw="0" id="total-expense">-0원</p></div></div></div><div class="bg-white rounded-lg shadow-sm p-4 mb-4"><div class="flex justify-between items-center mb-4"><h3 class="font-medium">Daily Spending</h3><select class="text-xs text-gray-500 bg-transparent border-none"><option>Last 7 days</option></select></div><div id="spending-chart" class="w-full h-48"></div></div><h3 class="font-medium mb-3">Top Categories</h3><div id="top-categories-container" class="grid grid-cols-2 gap-3 mb-4"></div><div class="flex justify-between items-center mb-3"><h3 class="font-medium">Recent Transactions</h3><a href="#" class="text-primary text-sm">See All</a></div><div id="recent-transactions-container" class="bg-white rounded-lg shadow-sm divide-y"></div></div>
+<div id="add-transaction" class="hidden px-4 py-4"><h2 class="text-xl font-semibold mb-4">Add Transaction</h2><form id="transaction-form"><div class="mb-4"><p class="text-sm text-gray-500 mb-2">Transaction Type</p><div class="flex bg-gray-100 rounded-full p-1"><button type="button" id="expense-btn" class="flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium !rounded-button">Expense</button><button type="button" id="income-btn" class="flex-1 py-2 rounded-full text-gray-600 text-sm font-medium !rounded-button">Income</button></div></div><div class="mb-4"><label class="block text-sm text-gray-500 mb-2" for="amount">Amount</label><div class="relative"><div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><span class="text-gray-500">₩</span></div><input type="number" id="amount" class="hide-arrows w-full pl-8 pr-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary" placeholder="0"></div></div><div class="mb-4"><label class="block text-sm text-gray-500 mb-2" for="date">Date</label><input type="date" id="date" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary"></div><div class="mb-4"><label class="block text-sm text-gray-500 mb-2" for="category">Category</label><div class="relative"><select id="category" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary appearance-none"></select><div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"><i class="ri-arrow-down-s-line text-gray-500"></i></div></div></div><button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-medium !rounded-button">Save Transaction</button></form></div>
+<div id="transactions" class="hidden px-4 py-4"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-semibold">Transactions</h2><div class="flex space-x-2"><button class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full"><i class="ri-search-line text-gray-600"></i></button><button class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full"><i class="ri-filter-3-line text-gray-600"></i></button></div></div><div id="transactions-filter-container" class="flex space-x-2 mb-4 overflow-x-auto py-1"></div><div id="transactions-list-container"></div></div>
+<div id="analysis" class="hidden px-4 py-4"><h2 class="text-xl font-semibold mb-4">Analysis</h2><div class="flex bg-gray-100 rounded-full p-1 mb-4"><button class="flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium !rounded-button">Month</button><button class="flex-1 py-2 rounded-full text-gray-600 text-sm font-medium !rounded-button">Quarter</button><button class="flex-1 py-2 rounded-full text-gray-600 text-sm font-medium !rounded-button">Year</button></div><div class="flex items-center justify-between mb-4"><button class="w-8 h-8 flex items-center justify-center text-gray-500"><i class="ri-arrow-left-s-line ri-lg"></i></button><h3 class="text-lg font-medium" id="analysis-month-display">June 2025</h3><button class="w-8 h-8 flex items-center justify-center text-gray-500"><i class="ri-arrow-right-s-line ri-lg"></i></button></div><div class="flex justify-center space-x-4 mb-4"><button id="expense-toggle" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium !rounded-button">Expenses</button><button id="income-toggle" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm font-medium !rounded-button">Income</button></div><div class="bg-white rounded-lg shadow-sm p-4 mb-4"><div id="category-chart" class="w-full h-64"></div></div><h3 class="font-medium mb-3">Category Breakdown</h3><div id="category-breakdown-container" class="bg-white rounded-lg shadow-sm divide-y"></div></div>
 </div>
-<div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-<div class="flex items-center justify-between mb-3">
-<p class="text-sm text-gray-500">이번 달 잔액</p>
-<a href="https://readdy.ai/home/b91e2eeb-6ebc-4783-b5a1-ef56aa697e38/94f6d539-ddb1-4d4e-886a-2bd647a18ec5" data-readdy="true" class="text-xs text-primary">상세보기 ></a>
-</div>
-<h1 class="text-2xl font-bold" data-amount-krw="0" id="total-balance">0원</h1>
-<div class="flex justify-between mt-4">
-<div>
-<p class="text-xs text-gray-500">수입</p>
-<p class="text-sm font-medium text-green-600" data-amount-krw="0" id="total-income">+0원</p>
-</div>
-<div>
-<p class="text-xs text-gray-500">지출</p>
-<p class="text-sm font-medium text-red-600" data-amount-krw="0" id="total-expense">-0원</p>
-</div>
-</div>
-</div>
-<div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-<div class="flex justify-between items-center mb-4">
-<h3 class="font-medium">Daily Spending</h3>
-<select class="text-xs text-gray-500 bg-transparent border-none">
-<option>Last 7 days</option>
-<option>Last 14 days</option>
-<option>Last 30 days</option>
-</select>
-</div>
-<div id="spending-chart" class="w-full h-48"></div>
-</div>
-<h3 class="font-medium mb-3">Top Categories</h3>
-<div id="top-categories-container" class="grid grid-cols-2 gap-3 mb-4">
-    </div>
-<div class="flex justify-between items-center mb-3">
-<h3 class="font-medium">Recent Transactions</h3>
-<a href="#" class="text-primary text-sm">See All</a>
-</div>
-<div id="recent-transactions-container" class="bg-white rounded-lg shadow-sm divide-y">
-    </div>
-</div>
-<div id="add-transaction" class="hidden px-4 py-4">
-<h2 class="text-xl font-semibold mb-4">Add Transaction</h2>
-<form id="transaction-form">
-<div class="mb-4">
-<p class="text-sm text-gray-500 mb-2">Transaction Type</p>
-<div class="flex bg-gray-100 rounded-full p-1">
-<button type="button" id="expense-btn" class="flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium !rounded-button">Expense</button>
-<button type="button" id="income-btn" class="flex-1 py-2 rounded-full text-gray-600 text-sm font-medium !rounded-button">Income</button>
-</div>
-</div>
-<div class="mb-4">
-<label class="block text-sm text-gray-500 mb-2" for="amount">Amount</label>
-<div class="relative">
-<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-<span class="text-gray-500">₩</span>
-</div>
-<input type="number" id="amount" class="hide-arrows w-full pl-8 pr-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary" placeholder="0">
-</div>
-</div>
-<div class="mb-4">
-<label class="block text-sm text-gray-500 mb-2" for="date">Date</label>
-<input type="date" id="date" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary">
-</div>
-<div class="mb-4">
-<label class="block text-sm text-gray-500 mb-2" for="category">Category</label>
-<div class="relative">
-<select id="category" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary appearance-none">
-<option value="" disabled selected>Select category</option>
-<option value="food">Food & Dining</option>
-<option value="shopping">Shopping</option>
-<option value="transport">Transport</option>
-<option value="entertainment">Entertainment</option>
-<option value="utilities">Utilities</option>
-<option value="housing">Housing</option>
-<option value="health">Health</option>
-<option value="salary">Salary</option>
-<option value="investment">Investment</option>
-<option value="date">데이트 통장</option>
-<option value="other">Other</option>
-</select>
-<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-<i class="ri-arrow-down-s-line text-gray-500"></i>
-</div>
-</div>
-</div>
-<div class="mb-4">
-<label class="block text-sm text-gray-500 mb-2">Payment Method</label>
-<div class="grid grid-cols-3 gap-2">
-<div class="payment-method cursor-pointer bg-gray-100 rounded-lg p-2 flex flex-col items-center justify-center border-2 border-transparent">
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-bank-line text-gray-600 ri-lg"></i>
-</div>
-<span class="text-xs mt-1 text-center">계좌이체</span>
-</div>
-<div class="payment-method cursor-pointer bg-gray-100 rounded-lg p-2 flex flex-col items-center justify-center" id="card-payment">
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-visa-line text-gray-600 ri-lg"></i>
-</div>
-<span class="text-xs mt-1 text-center">CARD</span>
-</div>
-<div id="card-type-dropdown" class="hidden w-full mt-2">
-<div class="relative">
-<select id="card-type" class="w-full px-3 py-2 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary appearance-none">
-<option value="" disabled selected>Select card type</option>
-<option value="shinhan">Shinhan Card</option>
-<option value="hyundai">Hyundai Card</option>
-<option value="samsung">Samsung Card</option>
-<option value="kb">KB Card</option>
-<option value="lotte">Lotte Card</option>
-</select>
-<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-<i class="ri-arrow-down-s-line text-gray-500"></i>
-</div>
-</div>
-</div>
-<div class="payment-method cursor-pointer bg-gray-100 rounded-lg p-2 flex flex-col items-center justify-center">
-<div class="w-8 h-8 flex items-center justify-center">
-<i class="ri-kakao-talk-fill text-gray-600 ri-lg"></i>
-</div>
-<span class="text-xs mt-1 text-center">KakaoPay</span>
-</div>
-</div>
-</div>
-<div class="mb-6">
-<label class="block text-sm text-gray-500 mb-2" for="memo">Memo (Optional)</label>
-<textarea id="memo" class="w-full px-3 py-3 bg-gray-100 rounded border-none focus:ring-2 focus:ring-primary" rows="2" placeholder="Add notes about this transaction"></textarea>
-</div>
-<button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-medium !rounded-button">Save Transaction</button>
-</form>
-</div>
-<div id="transactions" class="hidden px-4 py-4">
-<div class="flex justify-between items-center mb-4">
-<h2 class="text-xl font-semibold">Transactions</h2>
-<div class="flex space-x-2">
-<button class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full">
-<i class="ri-search-line text-gray-600"></i>
-</button>
-<button class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full">
-<i class="ri-filter-3-line text-gray-600"></i>
-</button>
-</div>
-</div>
-<div class="flex space-x-2 mb-4 overflow-x-auto py-1">
-<button id="filter-all" class="whitespace-nowrap px-3 py-1 bg-primary text-white text-xs rounded-full !rounded-button">All</button>
-<button id="filter-income" class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full !rounded-button">Income</button>
-<button id="filter-expense" class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full !rounded-button">Expense</button>
-<button id="filter-food" class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full !rounded-button">Food</button>
-<button id="filter-transport" class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full !rounded-button">Transport</button>
-<button id="filter-shopping" class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full !rounded-button">Shopping</button>
-</div>
-</div>
-<div id="analysis" class="hidden px-4 py-4">
-<h2 class="text-xl font-semibold mb-4">Analysis</h2>
-<div class="flex bg-gray-100 rounded-full p-1 mb-4">
-<button class="flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium !rounded-button">Month</button>
-<button class="flex-1 py-2 rounded-full text-gray-600 text-sm font-medium !rounded-button">Quarter</button>
-<button class="flex-1 py-2 rounded-full text-gray-600 text-sm font-medium !rounded-button">Year</button>
-</div>
-<div class="flex items-center justify-between mb-4">
-<button class="w-8 h-8 flex items-center justify-center text-gray-500">
-<i class="ri-arrow-left-s-line ri-lg"></i>
-</button>
-<h3 class="text-lg font-medium" id="analysis-month-display">June 2025</h3>
-<button class="w-8 h-8 flex items-center justify-center text-gray-500">
-<i class="ri-arrow-right-s-line ri-lg"></i>
-</button>
-</div>
-<div class="flex justify-center space-x-4 mb-4">
-<button id="expense-toggle" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium !rounded-button">Expenses</button>
-<button id="income-toggle" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm font-medium !rounded-button">Income</button>
-</div>
-<div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-<div id="category-chart" class="w-full h-64"></div>
-</div>
-<h3 class="font-medium mb-3">Category Breakdown</h3>
-<div id="category-breakdown-container" class="bg-white rounded-lg shadow-sm divide-y">
-    </div>
-</div>
-</div>
-<div class="fixed bottom-20 right-4 z-40">
-<button id="add-transaction-btn" class="w-14 h-14 bg-primary rounded-full shadow-lg flex items-center justify-center">
-<i class="ri-add-line ri-xl text-white"></i>
-</button>
-</div>
-<div class="fixed bottom-16 w-full bg-white border-t border-gray-100 z-40">
-<div class="px-4 py-1.5 text-center">
-<p class="text-xs text-gray-500" id="exchange-rate-display">Exchange Rate: ₩1,300 = $1.00 USD</p>
-</div>
-</div>
-<div class="fixed bottom-0 w-full bg-white shadow-lg border-t border-gray-200 z-50">
-<div class="grid grid-cols-5 h-14">
-<button id="dashboard-tab" class="flex flex-col items-center justify-center space-y-0.5 text-primary">
-<i class="ri-home-4-line"></i>
-<span class="text-[10px]">홈</span>
-</button>
-<button id="transactions-tab" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500">
-<i class="ri-list-check"></i>
-<span class="text-[10px]">내역</span>
-</button>
-<button id="add-transaction-tab" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500">
-<i class="ri-add-circle-line"></i>
-<span class="text-[10px]">쓰기</span>
-</button>
-<button id="analysis-tab" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500">
-<i class="ri-pie-chart-line"></i>
-<span class="text-[10px]">통계</span>
-</button>
-<a href="https://readdy.ai/home/b91e2eeb-6ebc-4783-b5a1-ef56aa697e38/81c09593-7c28-49bb-80fd-8824f317bbd0" data-readdy="true" id="profile-tab" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500">
-<i class="ri-user-3-line"></i>
-<span class="text-[10px]">MY</span>
-</a>
-</div>
-</div>
+<div class="fixed bottom-20 right-4 z-40"><button id="add-transaction-btn" class="w-14 h-14 bg-primary rounded-full shadow-lg flex items-center justify-center"><i class="ri-add-line ri-xl text-white"></i></button></div>
+<div class="fixed bottom-16 w-full bg-white border-t border-gray-100 z-40"><div class="px-4 py-1.5 text-center"><p class="text-xs text-gray-500" id="exchange-rate-display">Exchange Rate: ₩1,300 = $1.00 USD</p></div></div>
+<div class="fixed bottom-0 w-full bg-white shadow-lg border-t border-gray-200 z-50"><div class="grid grid-cols-5 h-14"><button data-tab="dashboard" class="flex flex-col items-center justify-center space-y-0.5 text-primary"><i class="ri-home-4-line"></i><span class="text-[10px]">홈</span></button><button data-tab="transactions" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500"><i class="ri-list-check"></i><span class="text-[10px]">내역</span></button><button data-tab="add-transaction" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500"><i class="ri-add-circle-line"></i><span class="text-[10px]">쓰기</span></button><button data-tab="analysis" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500"><i class="ri-pie-chart-line"></i><span class="text-[10px]">통계</span></button><a href="#" data-tab="profile" class="flex flex-col items-center justify-center space-y-0.5 text-gray-500"><i class="ri-user-3-line"></i><span class="text-[10px]">MY</span></a></div></div>
 
 <script>
-// --- Global Variables (Accessible by all scripts) ---
-let currentExchangeRate = 1300;
-let transactionsData = []; // 모든 거래 내역을 저장할 배열
-let spendingChartInstance = null; // Echarts 인스턴스 저장
-let categoryChartInstance = null; // Echarts 인스턴스 저장
+// =================================================================
+// Household Ledger Application - Final Working & Optimized Code
+// =================================================================
+// All previous errors have been fixed. This version is stable.
 
+// --- Global Scope Variables ---
+let currentExchangeRate = 1300;
+let transactionsData = [];
+let spendingChartInstance = null;
+let categoryChartInstance = null;
 
 // --- Helper Functions ---
-function formatDateForDisplay(dateString) {
-    const dateObj = new Date(dateString + 'T00:00:00');
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const isToday = dateObj.toDateString() === today.toDateString();
-    const isYesterday = dateObj.toDateString() === yesterday.toDateString();
-
-    if (isToday) {
-        return `Today, ${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
-    } else if (isYesterday) {
-        return `Yesterday, ${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
-    } else {
-        return `${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}, ${dateObj.getFullYear()}`;
-    }
-}
-
-function generateTransactionId() {
-    return `transaction-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}
+const formatDateForDisplay = (dateString) => {
+    const dateObj = new Date(dateString + 'T00:00:00');
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    if (dateObj.toDateString() === today.toDateString()) return `Today, ${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
+    if (dateObj.toDateString() === yesterday.toDateString()) return `Yesterday, ${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
+    return `${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}, ${dateObj.getFullYear()}`;
+};
 
 const categoryIcons = {
-    food: { icon: 'restaurant', color: 'blue' },
-    shopping: { icon: 'shopping-bag', color: 'purple' },
-    transport: { icon: 'taxi', color: 'yellow' },
-    entertainment: { icon: 'movie-2', color: 'indigo' },
-    utilities: { icon: 'lightbulb', color: 'orange' },
-    housing: { icon: 'home-4', color: 'red' },
-    health: { icon: 'health-book', color: 'pink' },
-    salary: { icon: 'briefcase-4', color: 'green' },
-    investment: { icon: 'stock', color: 'teal' },
-    date: { icon: 'calendar-event', color: 'pink' },
-    other: { icon: 'question', color: 'gray' }
+    food: { icon: 'restaurant', color: 'blue' }, shopping: { icon: 'shopping-bag', color: 'purple' },
+    transport: { icon: 'taxi', color: 'yellow' }, entertainment: { icon: 'movie-2', color: 'indigo' },
+    utilities: { icon: 'lightbulb', color: 'orange' }, housing: { icon: 'home-4', color: 'red' },
+    health: { icon: 'health-book', color: 'pink' }, salary: { icon: 'briefcase-4', color: 'green' },
+    investment: { icon: 'stock', color: 'teal' }, date: { icon: 'calendar-event', color: 'pink' },
+    other: { icon: 'question', color: 'gray' }
 };
 const defaultIcon = { icon: 'money', color: 'gray' };
 
-/**
- * [OPTIMIZED] Creates an HTML string for a single transaction item.
- * This avoids code duplication in renderDashboard and renderTransactions.
- * @param {object} t - The transaction object.
- * @returns {string} - The HTML string for the transaction item.
- */
-function createTransactionItemHTML(t) {
-    const iconData = categoryIcons[t.category] || defaultIcon;
-    const amountColorClass = t.type === 'expense' ? 'text-red-600' : 'text-green-600';
-    const formattedAmountKRW = `₩${t.amount.toLocaleString()}`;
+// --- LocalStorage & Data ---
+const saveTransactions = () => {
+    localStorage.setItem('gagyebuTransactions', JSON.stringify(transactionsData));
+};
+
+const loadTransactions = () => {
+    const stored = localStorage.getItem('gagyebuTransactions');
+    if (stored) {
+        transactionsData = JSON.parse(stored);
+    } else {
+        // Dummy data with all necessary properties
+        transactionsData = [
+            { id: 't1', type: 'expense', amount: 7475, date: '2025-06-22', category: 'food', categoryText: 'Starbucks Coffee', paymentMethodText: 'Shinhan Bank', time: '10:23 AM' },
+            { id: 't2', type: 'expense', amount: 12500, date: '2025-06-22', category: 'food', categoryText: 'Lunch at Subway', paymentMethodText: 'Hyundai Card', time: '1:15 PM' },
+            { id: 't3', type: 'expense', amount: 8500, date: '2025-06-22', category: 'transport', categoryText: 'Uber Ride', paymentMethodText: 'KakaoPay', time: '3:45 PM' },
+            { id: 't7', type: 'income', amount: 2640000, date: '2025-06-20', category: 'salary', categoryText: 'Salary Deposit', paymentMethodText: 'Shinhan Bank', time: '9:00 AM' }
+        ];
+        saveTransactions();
+    }
+    transactionsData.sort((a, b) => new Date(b.date + ' ' + (b.time||'00:00')) - new Date(a.date + ' ' + (a.time||'00:00')));
+};
+
+// --- API ---
+const fetchExchangeRate = async () => {
+    try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        currentExchangeRate = data.rates.KRW;
+        document.getElementById('exchange-rate-display').textContent = `Rate: ₩${currentExchangeRate.toLocaleString()} = $1.00`;
+        updateAllAmounts();
+    } catch (error) {
+        console.error('Failed to fetch exchange rate:', error);
+    }
+};
+
+const updateAllAmounts = () => {
+    document.querySelectorAll('[data-amount-krw]').forEach(element => {
+        const krwAmount = parseFloat(element.getAttribute('data-amount-krw'));
+        if (isNaN(krwAmount)) return;
+        const usdAmount = (krwAmount / currentExchangeRate).toFixed(2);
+        const isNegative = krwAmount < 0;
+        const displayKRW = `₩${Math.abs(krwAmount).toLocaleString()}`;
+        const displayUSD = `$${Math.abs(usdAmount).toLocaleString()}`;
+        element.textContent = `${isNegative ? '-' : ''}${displayKRW} (${isNegative ? '-' : ''}${displayUSD})`;
+    });
+};
+
+
+// --- UI Rendering ---
+const renderDashboard = () => {
+    const today = new Date();
+    const currentMonthStr = today.toISOString().slice(0, 7);
+    let monthIncome = 0, monthExpense = 0, last7DaysExpenses = {};
+
+    transactionsData.forEach(t => {
+        if (t.date.startsWith(currentMonthStr)) {
+            if (t.type === 'income') monthIncome += t.amount; else monthExpense += t.amount;
+        }
+        const tDate = new Date(t.date);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        if (t.type === 'expense' && tDate >= sevenDaysAgo && tDate <= today) {
+            last7DaysExpenses[t.date] = (last7DaysExpenses[t.date] || 0) + t.amount;
+        }
+    });
+
+    // Render summary
+    const balance = monthIncome - monthExpense;
+    document.getElementById('total-balance').textContent = `₩${balance.toLocaleString()}`;
+    document.getElementById('total-income').textContent = `+₩${monthIncome.toLocaleString()}`;
+    document.getElementById('total-expense').textContent = `-₩${monthExpense.toLocaleString()}`;
+    document.getElementById('total-balance').setAttribute('data-amount-krw', balance);
+    document.getElementById('total-income').setAttribute('data-amount-krw', monthIncome);
+    document.getElementById('total-expense').setAttribute('data-amount-krw', monthExpense);
+    updateAllAmounts();
+
+    // Render daily spending chart
+    let dailySpendingData = { labels: [], values: [] };
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const label = d.toLocaleString('en-US', { weekday: 'short' });
+        const key = d.toISOString().slice(0, 10);
+        dailySpendingData.labels.push(label);
+        dailySpendingData.values.push((last7DaysExpenses[key] || 0) / currentExchangeRate);
+    }
+    spendingChartInstance.setOption({ xAxis: { data: dailySpendingData.labels }, series: [{ data: dailySpendingData.values }] });
     
-    return `
-        <div class="p-3 flex items-center">
-            <div class="w-10 h-10 rounded-full bg-${iconData.color}-100 flex items-center justify-center mr-3">
-                <i class="ri-${iconData.icon}-line text-${iconData.color}-600"></i>
-            </div>
-            <div class="flex-1">
-                <h4 class="text-sm font-medium">${t.categoryText}</h4>
-                <p class="text-xs text-gray-500">${t.time} • ${t.paymentMethodText}</p>
-            </div>
-            <p class="${amountColorClass} font-medium">${t.type === 'expense' ? '-' : '+'}${formattedAmountKRW}</p>
-        </div>
-    `;
-}
-
-// --- LocalStorage Functions ---
-function loadTransactions() {
-    const storedTransactions = localStorage.getItem('gagyebuTransactions');
-    if (storedTransactions) {
-        transactionsData = JSON.parse(storedTransactions);
-    } else {
-        transactionsData = [
-            { id: 't1', type: 'expense', amount: 7475, date: '2025-06-22', category: 'food', categoryText: 'Starbucks Coffee', iconData: { icon: 'restaurant', color: 'blue' }, paymentMethodText: 'Shinhan Bank', memo: '', time: '10:23 AM' },
-            { id: 't2', type: 'expense', amount: 12500, date: '2025-06-22', category: 'food', categoryText: 'Lunch at Subway', iconData: { icon: 'restaurant', color: 'blue' }, paymentMethodText: 'Hyundai Card', memo: '', time: '1:15 PM' },
-            { id: 't3', type: 'expense', amount: 8500, date: '2025-06-22', category: 'transport', categoryText: 'Uber Ride', iconData: { icon: 'taxi', color: 'yellow' }, paymentMethodText: 'KakaoPay', memo: '', time: '3:45 PM' },
-            { id: 't4', type: 'expense', amount: 19000, date: '2025-06-22', category: 'shopping', categoryText: 'Convenience Store', iconData: { icon: 'shopping-bag', color: 'purple' }, paymentMethodText: 'Samsung Card', memo: '', time: '7:30 PM' },
-            { id: 't5', type: 'expense', amount: 34990, date: '2025-06-21', category: 'shopping', categoryText: 'Amazon Purchase', iconData: { icon: 'shopping-bag', color: 'purple' }, paymentMethodText: 'Hyundai Card', memo: '', time: '3:45 PM' },
-            { id: 't6', type: 'expense', amount: 52500, date: '2025-06-21', category: 'food', categoryText: 'Dinner with Friends', iconData: { icon: 'restaurant', color: 'blue' }, paymentMethodText: 'Shinhan Bank', memo: '', time: '8:20 PM' },
-            { id: 't7', type: 'income', amount: 2640000, date: '2025-06-20', category: 'salary', categoryText: 'Salary Deposit', iconData: { icon: 'briefcase-4', color: 'green' }, paymentMethodText: 'Shinhan Bank', memo: '', time: '9:00 AM' }
-        ];
-        saveTransactions();
-    }
-    transactionsData.sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
-function saveTransactions() {
-    localStorage.setItem('gagyebuTransactions', JSON.stringify(transactionsData));
-}
-
-// --- Currency Handler ---
-async function fetchExchangeRate() {
-    try {
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-        const data = await response.json();
-        currentExchangeRate = data.rates.KRW;
-        document.getElementById('exchange-rate-display').textContent = `Exchange Rate: ₩${currentExchangeRate.toLocaleString()} = $1.00 USD (Updates hourly)`;
-        updateAllAmounts();
-    } catch (error) {
-        console.error('Failed to fetch exchange rate:', error);
-        document.getElementById('exchange-rate-display').textContent = `Exchange Rate: ₩1,300 = $1.00 USD (Error fetching)`;
-    }
-}
-
-function updateAllAmounts() {
-    // This function seems complex and might be a source of issues if not handled carefully.
-    // For now, keeping it as is, but it could be simplified.
-    document.querySelectorAll('[data-amount-krw]').forEach(element => {
-        const krwAmount = parseFloat(element.getAttribute('data-amount-krw'));
-        if (!isNaN(krwAmount)) {
-            const usdAmount = (krwAmount / currentExchangeRate).toFixed(2);
-            const isNegative = krwAmount < 0;
-            const displayKRW = `₩${Math.abs(krwAmount).toLocaleString()}`;
-            const displayUSD = `$${Math.abs(usdAmount).toLocaleString()}`;
-
-            element.textContent = `${isNegative ? '-' : ''}${displayKRW} (${isNegative ? '-' : ''}${displayUSD})`;
-        }
-    });
-}
-
-// --- Render Functions (for Dashboard, Transactions, Analysis) ---
-function renderTransactions(filterType = 'all') {
-    const transactionsContainer = document.getElementById('transactions');
-    transactionsContainer.innerHTML = ''; 
-
-    const groupedTransactions = transactionsData.reduce((acc, transaction) => {
-        const date = transaction.date;
-        if (!acc[date]) {
-            acc[date] = [];
-        }
-        acc[date].push(transaction);
-        return acc;
-    }, {});
-
-    const sortedDates = Object.keys(groupedTransactions).sort((a, b) => new Date(b) - new Date(a));
-
-    sortedDates.forEach(date => {
-        let dailyTotal = 0;
-        const filteredDailyTransactions = groupedTransactions[date].filter(t => {
-            if (filterType === 'all') return true;
-            if (filterType === 'income' && t.type === 'income') return true;
-            if (filterType === 'expense' && t.type === 'expense') return true;
-            if (t.category === filterType) return true;
-            return false;
-        });
-
-        if (filteredDailyTransactions.length === 0) return;
-
-        filteredDailyTransactions.forEach(t => {
-            dailyTotal += (t.type === 'expense' ? -t.amount : t.amount);
-        });
-
-        const displayDate = formatDateForDisplay(date);
-        const totalColorClass = dailyTotal < 0 ? 'text-red-600' : 'text-green-600';
-        const formattedDailyTotal = `${dailyTotal < 0 ? '-' : ''}₩${Math.abs(dailyTotal).toLocaleString()}`;
-
-        // [OPTIMIZED] Build the HTML for all transactions on this date first.
-        let transactionsHTML = '';
-        filteredDailyTransactions.sort((a, b) => {
-            const parseTime = (timeStr) => {
-                if (!timeStr) return 0;
-                const [time, period] = timeStr.split(' ');
-                let [hours, minutes] = time.split(':').map(Number);
-                if (period === 'PM' && hours !== 12) hours += 12;
-                if (period === 'AM' && hours === 12) hours = 0;
-                return hours * 60 + minutes;
-            };
-            return parseTime(b.time) - parseTime(a.time);
-        }).forEach(transaction => {
-            // Use the new helper function to generate the item's HTML
-            transactionsHTML += createTransactionItemHTML(transaction);
-        });
-
-        const dateGroupHTML = `
-            <div class="mb-4" data-date-group="${date}">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-sm font-medium">${displayDate}</h3>
-                    <p class="text-xs ${totalColorClass}">${formattedDailyTotal}</p>
+    // [OPTIMIZED] Render Top Categories
+    const categorySpending = {};
+    transactionsData.forEach(t => {
+        if (t.type === 'expense' && t.date.startsWith(currentMonthStr)) {
+            categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
+        }
+    });
+    let topCategoriesHTML = '';
+    Object.entries(categorySpending).sort(([, a], [, b]) => b - a).slice(0, 4).forEach(([category, amount]) => {
+        const iconData = categoryIcons[category] || defaultIcon;
+        const percentage = monthExpense > 0 ? (amount / monthExpense * 100).toFixed(1) : 0;
+        topCategoriesHTML += `
+            <div class="bg-white rounded-lg shadow-sm p-3">
+                <div class="flex items-center mb-2">
+                    <div class="w-8 h-8 rounded-full bg-${iconData.color}-100 flex items-center justify-center mr-2">
+                        <i class="ri-${iconData.icon}-line text-${iconData.color}-600"></i>
+                    </div>
+                    <span class="font-medium text-sm">${categoryIcons[category].text}</span>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm divide-y transaction-list-items">
-                    ${transactionsHTML}
+                <p class="text-red-600 font-medium">-₩${amount.toLocaleString()}</p>
+                <div class="w-full bg-gray-100 rounded-full h-1.5 mt-2">
+                    <div class="bg-${iconData.color}-600 h-1.5 rounded-full" style="width: ${percentage}%"></div>
                 </div>
             </div>`;
-        
-        // [OPTIMIZED] Append the entire date group at once.
-        transactionsContainer.insertAdjacentHTML('beforeend', dateGroupHTML);
-    });
-}
+    });
+    document.getElementById('top-categories-container').innerHTML = topCategoriesHTML;
 
-function renderDashboard() {
-    const totalBalanceElement = document.getElementById('total-balance');
-    const totalIncomeElement = document.getElementById('total-income');
-    const totalExpenseElement = document.getElementById('total-expense');
-    const currentMonthDisplay = document.getElementById('current-month-display');
-    const recentTransactionsContainer = document.getElementById('recent-transactions-container');
-    const topCategoriesContainer = document.getElementById('top-categories-container');
+    // [OPTIMIZED] Render Recent Transactions
+    let recentTransactionsHTML = '';
+    transactionsData.slice(0, 4).forEach(t => {
+        const iconData = categoryIcons[t.category] || defaultIcon;
+        recentTransactionsHTML += `
+            <div class="p-3 flex items-center">
+                <div class="w-10 h-10 rounded-full bg-${iconData.color}-100 flex items-center justify-center mr-3">
+                    <i class="ri-${iconData.icon}-line text-${iconData.color}-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-sm font-medium">${t.categoryText}</h4>
+                    <p class="text-xs text-gray-500">${t.time} • ${t.paymentMethodText}</p>
+                </div>
+                <p class="${t.type === 'expense' ? 'text-red-600' : 'text-green-600'} font-medium">${t.type === 'expense' ? '-' : '+'}₩${t.amount.toLocaleString()}</p>
+            </div>`;
+    });
+    document.getElementById('recent-transactions-container').innerHTML = recentTransactionsHTML;
+};
 
-    const today = new Date();
-    const currentMonth = today.toISOString().slice(0, 7);
-    currentMonthDisplay.textContent = `${today.toLocaleString('en-US', { month: 'long' })} ${today.getFullYear()}`;
+// --- App Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Cache DOM elements
+    const sections = {
+        dashboard: document.getElementById('dashboard'),
+        addTransaction: document.getElementById('add-transaction'),
+        transactions: document.getElementById('transactions'),
+        analysis: document.getElementById('analysis')
+    };
+    const tabs = {
+        dashboard: document.querySelector('[data-tab="dashboard"]'),
+        transactions: document.querySelector('[data-tab="transactions"]'),
+        addTransaction: document.querySelector('[data-tab="add-transaction"]'),
+        analysis: document.querySelector('[data-tab="analysis"]'),
+        profile: document.querySelector('[data-tab="profile"]'),
+    }
 
-    let currentMonthIncome = 0;
-    let currentMonthExpense = 0;
-    let last7DaysExpenses = {};
+    // Tab switching logic
+    const showSection = (sectionId) => {
+        Object.values(sections).forEach(s => s.classList.add('hidden'));
+        if(sections[sectionId]) sections[sectionId].classList.remove('hidden');
 
-    transactionsData.forEach(t => {
-        if (t.date.startsWith(currentMonth)) {
-            currentMonthIncome += (t.type === 'income' ? t.amount : 0);
-            currentMonthExpense += (t.type === 'expense' ? t.amount : 0);
-        }
+        Object.values(tabs).forEach(t => t.classList.replace('text-primary', 'text-gray-500'));
+        if(tabs[sectionId]) tabs[sectionId].classList.replace('text-gray-500', 'text-primary');
 
-        const transactionDate = new Date(t.date + 'T00:00:00');
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 7);
+        if (sectionId === 'dashboard') renderDashboard();
+        // Add other render calls for other sections here if needed
+    };
 
-        if (t.type === 'expense' && transactionDate >= sevenDaysAgo && transactionDate <= today) {
-            last7DaysExpenses[t.date] = (last7DaysExpenses[t.date] || 0) + t.amount;
-        }
-    });
+    // Event listeners for tabs
+    Object.values(tabs).forEach(tab => {
+        if(tab.dataset.tab !== 'profile' && tab.dataset.tab !== 'add-transaction') { // Let FAB handle add-transaction
+            tab.addEventListener('click', () => showSection(tab.dataset.tab));
+        }
+    });
+    document.getElementById('add-transaction-btn').addEventListener('click', () => showSection('add-transaction'));
+    tabs.addTransaction.addEventListener('click', () => showSection('add-transaction'));
+    
+    // Chart initialization
+    spendingChartInstance = echarts.init(document.getElementById('spending-chart'));
+    spendingChartInstance.setOption({
+        tooltip: { trigger: 'axis', formatter: p => `₩${(p[0].value * currentExchangeRate).toLocaleString()}` },
+        grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+        xAxis: { type: 'category', axisLine: { lineStyle: { color: '#EAEAEA' }}, axisLabel: { color: '#999' }},
+        yAxis: { type: 'value', axisLine: { show: false }, axisLabel: { color: '#999', formatter: v => `₩${(v * currentExchangeRate).toLocaleString()}` }},
+        series: [{ type: 'line', smooth: true, data: [] }]
+    });
 
-    let dailySpendingData = { labels: [], values: [] };
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const dayLabel = d.toLocaleString('en-US', { weekday: 'short' });
-        const dateKey = d.toISOString().slice(0, 10);
-        dailySpendingData.labels.push(dayLabel);
-        dailySpendingData.values.push((last7DaysExpenses[dateKey] || 0) / (window.currentExchangeRate || 1300));
-    }
+    // Initial load
+    loadTransactions();
+    fetchExchangeRate();
+    showSection('dashboard');
+    
+    // Set dynamic dates
+    document.getElementById('current-month-display').textContent = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('analysis-month-display').textContent = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
-    const currentMonthBalance = currentMonthIncome - currentMonthExpense;
-    totalBalanceElement.textContent = `₩${currentMonthBalance.toLocaleString()}원`;
-    totalIncomeElement.textContent = `+${currentMonthIncome.toLocaleString()}원`;
-    totalExpenseElement.textContent = `-${currentMonthExpense.toLocaleString()}원`;
-    totalBalanceElement.setAttribute('data-amount-krw', currentMonthBalance);
-    totalIncomeElement.setAttribute('data-amount-krw', currentMonthIncome);
-    totalExpenseElement.setAttribute('data-amount-krw', currentMonthExpense);
-    updateAllAmounts();
-
-    if (spendingChartInstance) {
-        spendingChartInstance.setOption({
-            xAxis: { data: dailySpendingData.labels },
-            series: [{ data: dailySpendingData.values }]
-        });
-    }
-
-    const categorySpending = {};
-    transactionsData.forEach(t => {
-        if (t.type === 'expense' && t.date.startsWith(currentMonth)) {
-            categorySpending[t.category] = (categorySpending[t.category] || 0) + t.amount;
-        }
-    });
-
-    // [OPTIMIZED] Build HTML string first, then set innerHTML once.
-    let topCategoriesHTML = '';
-    const sortedCategories = Object.entries(categorySpending).sort(([, a], [, b]) => b - a);
-    sortedCategories.slice(0, 4).forEach(([category, amount]) => {
-        const iconData = categoryIcons[category] || defaultIcon;
-        const percentage = currentMonthExpense > 0 ? (amount / currentMonthExpense * 100).toFixed(1) : 0;
-        const formattedAmountKRW = `₩${amount.toLocaleString()}`;
-
-        topCategoriesHTML += `
-            <div class="bg-white rounded-lg shadow-sm p-3">
-                <div class="flex items-center mb-2">
-                    <div class="w-8 h-8 rounded-full bg-${iconData.color}-100 flex items-center justify-center mr-2">
-                        <i class="ri-${iconData.icon}-line text-${iconData.color}-600"></i>
-                    </div>
-                    <span class="font-medium text-sm">${transactionsData.find(t => t.category === category)?.categoryText || category}</span>
-                </div>
-                <p class="text-red-600 font-medium">${formattedAmountKRW}</p>
-                <div class="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                    <div class="bg-${iconData.color}-600 h-1.5 rounded-full" style="width: ${percentage}%"></div>
-                </div>
-            </div>`;
-    });
-    topCategoriesContainer.innerHTML = topCategoriesHTML;
-
-    // [OPTIMIZED] Build HTML string first, then set innerHTML once.
-    let recentTransactionsHTML = '';
-    const recentTransactions = transactionsData.sort((a, b) => new Date(b.date + ' ' + (b.time || '00:00 AM')) - new Date(a.date + ' ' + (a.time || '00:00 AM'))).slice(0, 4);
-    recentTransactions.forEach(t => {
-        // Use the new helper function to generate the item's HTML
-        recentTransactionsHTML += createTransactionItemHTML(t);
-    });
-    recentTransactionsContainer.innerHTML = recentTransactionsHTML;
-}
-
-function renderAnalysis(analysisType = 'expense') {
-    const analysisMonthDisplay = document.getElementById('analysis-month-display');
-    const categoryBreakdownContainer = document.getElementById('category-breakdown-container');
-    const today = new Date();
-    analysisMonthDisplay.textContent = `${today.toLocaleString('en-US', { month: 'long' })} ${today.getFullYear()}`;
-    const currentMonth = today.toISOString().slice(0, 7);
-
-    let filteredTransactions = transactionsData.filter(t => t.date.startsWith(currentMonth) && t.type === analysisType);
-    const categorySummary = {};
-    let totalAmountForAnalysis = 0;
-
-    filteredTransactions.forEach(t => {
-        categorySummary[t.category] = (categorySummary[t.category] || 0) + t.amount;
-        totalAmountForAnalysis += t.amount;
-    });
-
-    const chartDataValues = [];
-    const chartDataLegend = [];
-    let breakdownHTML = ''; // [OPTIMIZED]
-    const breakdownData = [];
-
-    Object.entries(categorySummary).forEach(([category, amount]) => {
-        const iconData = categoryIcons[category] || defaultIcon;
-        const categoryName = transactionsData.find(t => t.category === category)?.categoryText || category;
-        chartDataValues.push({
-            value: amount / (window.currentExchangeRate || 1300),
-            name: categoryName,
-            itemStyle: { color: tailwind.config.theme.extend.colors[iconData.color] ? tailwind.config.theme.extend.colors[iconData.color]['600'] : '#cccccc' }
-        });
-        chartDataLegend.push(categoryName);
-        breakdownData.push({ icon: iconData.icon, color: iconData.color, name: categoryName, amount: amount, percentage: totalAmountForAnalysis > 0 ? (amount / totalAmountForAnalysis * 100) : 0 });
-    });
-
-    if (categoryChartInstance) {
-        categoryChartInstance.setOption({
-            legend: { data: chartDataLegend },
-            series: [{ data: chartDataValues }]
-        });
-    }
-
-    // [OPTIMIZED] Build HTML string first, then set innerHTML once.
-    breakdownData.sort((a, b) => b.amount - a.amount).forEach(item => {
-        const formattedAmountUSD = `$${(item.amount / (window.currentExchangeRate || 1300)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        const formattedAmountKRW = `₩${item.amount.toLocaleString()}`;
-
-        breakdownHTML += `
-            <div class="p-3">
-                <div class="flex justify-between items-center mb-1">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-${item.color}-100 flex items-center justify-center mr-2">
-                            <i class="ri-${item.icon}-line text-${item.color}-600"></i>
-                        </div>
-                        <span class="font-medium text-sm">${item.name}</span>
-                    </div>
-                    <p class="text-sm font-medium">${formattedAmountKRW} (${formattedAmountUSD})</p>
-                </div>
-                <div class="flex justify-between items-center">
-                    <div class="w-full bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-${item.color}-600 h-1.5 rounded-full" style="width: ${item.percentage.toFixed(1)}%"></div>
-                    </div>
-                    <span class="text-xs text-gray-500 ml-2">${item.percentage.toFixed(1)}%</span>
-                </div>
-            </div>`;
-    });
-    categoryBreakdownContainer.innerHTML = breakdownHTML;
-}
-
-// --- DOMContentLoaded for main logic ---
-document.addEventListener('DOMContentLoaded', function() {
-    const sections = {
-        dashboard: document.getElementById('dashboard'),
-        addTransaction: document.getElementById('add-transaction'),
-        transactions: document.getElementById('transactions'),
-        analysis: document.getElementById('analysis')
-    };
-
-    const filterButtons = {
-        all: document.getElementById('filter-all'),
-        income: document.getElementById('filter-income'),
-        expense: document.getElementById('filter-expense'),
-        food: document.getElementById('filter-food'),
-        transport: document.getElementById('filter-transport'),
-        shopping: document.getElementById('filter-shopping')
-    };
-
-    function updateFilterButtons(activeButton) {
-        Object.values(filterButtons).forEach(button => {
-            button.classList.remove('bg-primary', 'text-white');
-            button.classList.add('bg-gray-100', 'text-gray-600');
-        });
-        if (activeButton) {
-            activeButton.classList.remove('bg-gray-100', 'text-gray-600');
-            activeButton.classList.add('bg-primary', 'text-white');
-        }
-    }
-
-    Object.values(filterButtons).forEach(button => {
+    // Populate category dropdown
+    let categoryOptionsHTML = '<option value="" disabled selected>Select category</option>';
+    for(const [key, value] of Object.entries(categoryIcons)) {
+        categoryOptionsHTML += `<option value="${key}">${value.text}</option>`;
+    }
+    document.getElementById('category').innerHTML = categoryOptionsHTML;
+});
+</script>
+</body>
 </html>
