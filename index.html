@@ -910,87 +910,281 @@ showSection('dashboard');
 </script>
 <script id="transaction-form-handlers">
 document.addEventListener('DOMContentLoaded', function() {
-const expenseBtn = document.getElementById('expense-btn');
-const incomeBtn = document.getElementById('income-btn');
-const transactionForm = document.getElementById('transaction-form');
-const paymentMethods = document.querySelectorAll('.payment-method');
-// Set default date to today
-const dateInput = document.getElementById('date');
-const today = new Date();
-const formattedDate = today.toISOString().split('T')[0];
-dateInput.value = formattedDate;
-// Transaction type toggle
-expenseBtn.addEventListener('click', function() {
-expenseBtn.classList.add('bg-primary', 'text-white');
-expenseBtn.classList.remove('text-gray-600');
-incomeBtn.classList.remove('bg-primary', 'text-white');
-incomeBtn.classList.add('text-gray-600');
-});
-incomeBtn.addEventListener('click', function() {
-incomeBtn.classList.add('bg-primary', 'text-white');
-incomeBtn.classList.remove('text-gray-600');
-expenseBtn.classList.remove('bg-primary', 'text-white');
-expenseBtn.classList.add('text-gray-600');
-});
-// Payment method selection
-const cardDropdown = document.getElementById('card-type-dropdown');
-const cardPayment = document.getElementById('card-payment');
-paymentMethods.forEach(method => {
-method.addEventListener('click', function() {
-paymentMethods.forEach(m => {
-m.classList.remove('border-primary');
-m.classList.add('border-transparent');
-});
-this.classList.add('border-primary');
-this.classList.remove('border-transparent');
-// Show/hide card type dropdown
-if (this === cardPayment) {
-cardDropdown.classList.remove('hidden');
-} else {
-cardDropdown.classList.add('hidden');
-}
-});
-});
-// Set initial state to card payment selected
-window.addEventListener('load', () => {
-cardPayment.click();
-});
-// Form submission
-transactionForm.addEventListener('submit', function(e) {
-e.preventDefault();
-const amount = document.getElementById('amount').value;
-const date = document.getElementById('date').value;
-const category = document.getElementById('category').value;
-const memo = document.getElementById('memo').value;
-// Validate form
-if (!amount || amount <= 0) {
-// Show custom error message
-const errorDiv = document.createElement('div');
-errorDiv.className = 'bg-red-100 text-red-700 p-3 rounded mb-4';
-errorDiv.textContent = 'Please enter a valid amount';
-const firstElement = transactionForm.firstChild;
-transactionForm.insertBefore(errorDiv, firstElement);
-// Remove error after 3 seconds
-setTimeout(() => {
-errorDiv.remove();
-}, 3000);
-return;
-}
-// Show success message
-const successDiv = document.createElement('div');
-successDiv.className = 'bg-green-100 text-green-700 p-3 rounded mb-4';
-successDiv.textContent = 'Transaction saved successfully!';
-const firstElement = transactionForm.firstChild;
-transactionForm.insertBefore(successDiv, firstElement);
-// Reset form
-transactionForm.reset();
-dateInput.value = formattedDate;
-// Remove success message and go back to dashboard after 1.5 seconds
-setTimeout(() => {
-successDiv.remove();
-document.getElementById('dashboard-tab').click();
-}, 1500);
-});
+    const expenseBtn = document.getElementById('expense-btn');
+    const incomeBtn = document.getElementById('income-btn');
+    const transactionForm = document.getElementById('transaction-form');
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const transactionsContainer = document.getElementById('transactions'); // 내역이 표시되는 전체 섹션
+
+    // Set default date to today
+    const dateInput = document.getElementById('date');
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    dateInput.value = formattedDate;
+
+    // Transaction type toggle
+    expenseBtn.addEventListener('click', function() {
+        expenseBtn.classList.add('bg-primary', 'text-white');
+        expenseBtn.classList.remove('text-gray-600');
+        incomeBtn.classList.remove('bg-primary', 'text-white');
+        incomeBtn.classList.add('text-gray-600');
+    });
+
+    incomeBtn.addEventListener('click', function() {
+        incomeBtn.classList.add('bg-primary', 'text-white');
+        incomeBtn.classList.remove('text-gray-600');
+        expenseBtn.classList.remove('bg-primary', 'text-white');
+        expenseBtn.classList.add('text-gray-600');
+    });
+
+    // Payment method selection
+    const cardDropdown = document.getElementById('card-type-dropdown');
+    const cardPayment = document.getElementById('card-payment');
+
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            paymentMethods.forEach(m => {
+                m.classList.remove('border-primary');
+                m.classList.add('border-transparent');
+            });
+            this.classList.add('border-primary');
+            this.classList.remove('border-transparent');
+
+            // Show/hide card type dropdown
+            if (this === cardPayment) {
+                cardDropdown.classList.remove('hidden');
+            } else {
+                cardDropdown.classList.add('hidden');
+            }
+        });
+    });
+
+    // Set initial state to account transfer selected (assuming first child is bank transfer)
+    window.addEventListener('load', () => {
+        paymentMethods[0].click(); // 첫 번째 결제 수단 (계좌이체) 선택
+    });
+
+    // Function to format date for display (e.g., "Today, June 22" or "June 20, 2025")
+    function formatDateForDisplay(dateString) {
+        const dateObj = new Date(dateString + 'T00:00:00'); // KST 기준 오전 9시 9분 21초, 썸머타임 고려
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        const isToday = dateObj.toDateString() === today.toDateString();
+        const isYesterday = dateObj.toDateString() === yesterday.toDateString();
+
+        if (isToday) {
+            return `Today, ${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
+        } else if (isYesterday) {
+            return `Yesterday, ${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
+        } else {
+            return `${dateObj.toLocaleString('en-US', { month: 'long', day: 'numeric' })}, ${dateObj.getFullYear()}`;
+        }
+    }
+
+    // Function to generate unique transaction ID (simple for now)
+    let transactionCounter = 0;
+    function generateTransactionId() {
+        transactionCounter++;
+        return `transaction-${Date.now()}-${transactionCounter}`;
+    }
+
+    // Function to add a new transaction to the list
+    function addTransactionToList(transactionData) {
+        const { id, type, amount, date, categoryText, iconData, paymentMethodText, memo, time } = transactionData;
+
+        const sign = type === 'expense' ? '-' : '+';
+        const amountColorClass = type === 'expense' ? 'text-red-600' : 'text-green-600';
+        const formattedAmountKRW = `₩${amount.toLocaleString()}`;
+        const formattedAmountUSD = `$${(amount / currentExchangeRate).toFixed(2)}`; // Assuming currentExchangeRate is available globally
+
+        const newTransactionHtml = `
+            <div id="${id}" class="p-3 flex items-center">
+                <div class="w-10 h-10 rounded-full bg-${iconData.color}-100 flex items-center justify-center mr-3">
+                    <i class="ri-${iconData.icon}-line text-${iconData.color}-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-sm font-medium">${categoryText}</h4>
+                    <p class="text-xs text-gray-500">${time} • ${paymentMethodText}</p>
+                    ${memo ? `<p class="text-xs text-gray-400 mt-0.5">${memo}</p>` : ''}
+                </div>
+                <p class="${amountColorClass} font-medium" data-amount-krw="${amount}">${formattedAmountKRW} (${formattedAmountUSD})</p>
+            </div>
+        `;
+
+        const displayDate = formatDateForDisplay(date);
+        let dateGroupDiv = transactionsContainer.querySelector(`[data-date-group="${date}"]`);
+
+        // If date group doesn't exist, create it
+        if (!dateGroupDiv) {
+            dateGroupDiv = document.createElement('div');
+            dateGroupDiv.className = 'mb-4';
+            dateGroupDiv.setAttribute('data-date-group', date); // Use ISO date for grouping
+            dateGroupDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium">${displayDate}</h3>
+                    <p class="text-xs ${amountColorClass}"></p> </div>
+                <div class="bg-white rounded-lg shadow-sm divide-y transaction-list-items">
+                </div>
+            `;
+            // Find where to insert the new date group (descending order by date)
+            let inserted = false;
+            const existingDateGroups = transactionsContainer.querySelectorAll('[data-date-group]');
+            for (let i = 0; i < existingDateGroups.length; i++) {
+                const existingDate = existingDateGroups[i].getAttribute('data-date-group');
+                if (new Date(date) > new Date(existingDate)) {
+                    transactionsContainer.insertBefore(dateGroupDiv, existingDateGroups[i]);
+                    inserted = true;
+                    break;
+                }
+            }
+            if (!inserted) {
+                transactionsContainer.appendChild(dateGroupDiv); // If it's the oldest or first
+            }
+        }
+
+        const transactionListItems = dateGroupDiv.querySelector('.transaction-list-items');
+        transactionListItems.insertAdjacentHTML('afterbegin', newTransactionHtml); // Add to the top of the list for that date
+        updateDailyTotal(date, amount, type); // Update the daily total
+    }
+
+    // Function to update daily total in the header of each date group
+    function updateDailyTotal(dateString, amount, type) {
+        const dateGroupDiv = transactionsContainer.querySelector(`[data-date-group="${dateString}"]`);
+        if (dateGroupDiv) {
+            const totalElement = dateGroupDiv.querySelector('.flex.justify-between.items-center.mb-2 p');
+            let currentTotal = parseFloat(totalElement.textContent.replace(/[₩$,-]/g, '')) || 0;
+
+            if (type === 'expense') {
+                currentTotal -= amount;
+            } else {
+                currentTotal += amount;
+            }
+
+            const totalColorClass = currentTotal < 0 ? 'text-red-600' : 'text-green-600';
+            totalElement.className = `text-xs ${totalColorClass}`;
+            totalElement.textContent = `${currentTotal < 0 ? '-' : ''}₩${Math.abs(currentTotal).toLocaleString()}`;
+        }
+    }
+
+
+    // Form submission
+    transactionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const amount = parseFloat(document.getElementById('amount').value);
+        const date = document.getElementById('date').value;
+        const categorySelect = document.getElementById('category');
+        const category = categorySelect.value;
+        const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+        const memo = document.getElementById('memo').value;
+        const isExpense = expenseBtn.classList.contains('bg-primary');
+        const transactionType = isExpense ? 'expense' : 'income';
+
+        let paymentMethodText = '';
+        const selectedPaymentMethodElement = document.querySelector('.payment-method.border-primary');
+        if (selectedPaymentMethodElement) {
+            paymentMethodText = selectedPaymentMethodElement.querySelector('span').textContent;
+            if (selectedPaymentMethodElement.id === 'card-payment') {
+                const cardTypeSelect = document.getElementById('card-type');
+                const cardType = cardTypeSelect.value;
+                if (cardType) {
+                    paymentMethodText = cardTypeSelect.options[cardTypeSelect.selectedIndex].text;
+                }
+            }
+        }
+
+        // Validate form
+        if (!amount || amount <= 0) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 text-red-700 p-3 rounded mb-4';
+            errorDiv.textContent = 'Please enter a valid amount.';
+            transactionForm.insertBefore(errorDiv, transactionForm.firstChild);
+            setTimeout(() => { errorDiv.remove(); }, 3000);
+            return;
+        }
+        if (!date) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 text-red-700 p-3 rounded mb-4';
+            errorDiv.textContent = 'Please select a date.';
+            transactionForm.insertBefore(errorDiv, transactionForm.firstChild);
+            setTimeout(() => { errorDiv.remove(); }, 3000);
+            return;
+        }
+        if (!category) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 text-red-700 p-3 rounded mb-4';
+            errorDiv.textContent = 'Please select a category.';
+            transactionForm.insertBefore(errorDiv, transactionForm.firstChild);
+            setTimeout(() => { errorDiv.remove(); }, 3000);
+            return;
+        }
+
+        // Category icons mapping
+        const categoryIcons = {
+            food: { icon: 'restaurant', color: 'blue' },
+            shopping: { icon: 'shopping-bag', color: 'purple' },
+            transport: { icon: 'taxi', color: 'yellow' },
+            entertainment: { icon: 'movie-2', color: 'indigo' },
+            utilities: { icon: 'lightbulb', color: 'orange' },
+            housing: { icon: 'home-4', color: 'red' },
+            health: { icon: 'health-book', color: 'pink' },
+            salary: { icon: 'briefcase-4', color: 'green' },
+            investment: { icon: 'stock', color: 'teal' },
+            date: { icon: 'calendar-event', color: 'pink' },
+            other: { icon: 'question', color: 'gray' } // 'other' category icon
+        };
+        const defaultIcon = { icon: 'money', color: 'gray' };
+        const iconData = categoryIcons[category] || defaultIcon;
+
+        // Get current time for display
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+        const newTransaction = {
+            id: generateTransactionId(),
+            type: transactionType,
+            amount: amount,
+            date: date, // YYYY-MM-DD format
+            category: category, // category value
+            categoryText: categoryText, // category display text
+            iconData: iconData,
+            paymentMethodText: paymentMethodText,
+            memo: memo,
+            time: timeString
+        };
+
+        // Add the new transaction to the list (DOM)
+        addTransactionToList(newTransaction);
+
+
+        // Show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'bg-green-100 text-green-700 p-3 rounded mb-4';
+        successDiv.textContent = 'Transaction saved successfully!';
+        transactionForm.insertBefore(successDiv, transactionForm.firstChild);
+
+        // Reset form
+        transactionForm.reset();
+        dateInput.value = formattedDate; // 날짜 다시 오늘로 설정
+        expenseBtn.classList.add('bg-primary', 'text-white'); // 기본값으로 지출 버튼 활성화
+        expenseBtn.classList.remove('text-gray-600');
+        incomeBtn.classList.remove('bg-primary', 'text-white');
+        incomeBtn.classList.add('text-gray-600');
+        document.querySelector('.payment-method.border-primary')?.classList.remove('border-primary'); // 이전 선택 해제
+        document.querySelector('.payment-method:first-child')?.classList.add('border-primary'); // 기본값 계좌이체 선택
+        cardDropdown.classList.add('hidden'); // 카드 드롭다운 숨기기
+        categorySelect.value = ''; // 카테고리 선택 초기화
+
+
+        // Remove success message and go back to dashboard after 1.5 seconds
+        setTimeout(() => {
+            successDiv.remove();
+            document.getElementById('transactions-tab').click(); // 내역 탭으로 이동 (사용자가 추가된 내역을 바로 볼 수 있도록)
+            // filterTransactions('all'); // 필터 적용하여 새로운 항목이 보이도록 함 (이미 탭 이동 시 All 필터가 기본 적용될 것으로 예상)
+        }, 1500);
+    });
 });
 </script>
 </body>
