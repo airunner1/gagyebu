@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Budget App</title>
+    <title>AI Budget App (Mobile Fixed)</title>
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
         tailwind.config = {
@@ -167,7 +167,7 @@ const budgetApp = {
         this.api.loadTransactions();
         this.ui.populateFilters();
         this.ui.showSection('dashboard');
-        console.log("Budget App Initialized (with AI Image Analysis)");
+        console.log("Budget App Initialized (Mobile Fix)");
     },
     
     initCharts() {
@@ -235,52 +235,16 @@ const budgetApp = {
         async analyzeReceiptImage(base64ImageData) {
             const apiKey = "";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            
             const prompt = `You are an expert data extractor. Analyze the provided image of a transaction history. Extract every individual transaction. For each transaction, provide the date, description, and amount. Use the current year, 2025. The date format in the image 'MM. DD.' should be converted to 'YYYY-MM-DD'. The description is the store name or transaction reason. The amount is the number with a '원' suffix. Determine if it's 'income' or 'expense' (all transactions in the image are expenses). Finally, guess a category from the following list based on the description: 음식, 패션, 데이트, 교통, 기타 지출. Return a valid JSON array of objects.`;
-            
-            const payload = {
-                contents: [{
-                    role: "user",
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: "image/png", data: base64ImageData } }
-                    ]
-                }],
-                generation_config: {
-                    response_mime_type: "application/json",
-                    response_schema: {
-                        type: "ARRAY",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                "date": { "type": "STRING", "description": "YYYY-MM-DD" },
-                                "description": { "type": "STRING" },
-                                "amount": { "type": "NUMBER" },
-                                "category_guess": { "type": "STRING", "description": "Guess from '음식', '패션', '데이트', '교통', '기타 지출'"}
-                            },
-                             "required": ["date", "description", "amount", "category_guess"]
-                        }
-                    }
-                }
-            };
-
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: "image/png", data: base64ImageData } }] }], generation_config: { response_mime_type: "application/json", response_schema: { type: "ARRAY", items: { type: "OBJECT", properties: { "date": { "type": "STRING", "description": "YYYY-MM-DD" }, "description": { "type": "STRING" }, "amount": { "type": "NUMBER" }, "category_guess": { "type": "STRING", "description": "Guess from '음식', '패션', '데이트', '교통', '기타 지출'"} }, "required": ["date", "description", "amount", "category_guess"] } } } };
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (!response.ok) { throw new Error(`API Error: ${response.status} ${response.statusText}`); }
                 const result = await response.json();
                 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts.length > 0) {
                     return JSON.parse(result.candidates[0].content.parts[0].text);
-                } else {
-                    throw new Error("AI did not return valid data.");
-                }
-            } catch (error) {
-                console.error("Gemini API Call failed:", error);
-                throw error;
-            }
+                } else { throw new Error("AI did not return valid data."); }
+            } catch (error) { console.error("Gemini API Call failed:", error); throw error; }
         }
     },
 
@@ -305,9 +269,7 @@ const budgetApp = {
                 budgetApp.dom.totalExpense.textContent = `-₩${monthExpense.toLocaleString()}`;
 
                 const recentTxs = transactions.slice(0, 5);
-                budgetApp.dom.recentTransactions.innerHTML = recentTxs.length > 0 
-                    ? `<div class="divide-y divide-gray-100">${recentTxs.map(t => budgetApp.ui.templates.transactionItem(t)).join('')}</div>`
-                    : `<div class="text-center p-8 text-gray-500">거래 내역이 없습니다.</div>`;
+                budgetApp.dom.recentTransactions.innerHTML = recentTxs.length > 0 ? `<div class="divide-y divide-gray-100">${recentTxs.map(t => budgetApp.ui.templates.transactionItem(t)).join('')}</div>` : `<div class="text-center p-8 text-gray-500">거래 내역이 없습니다.</div>`;
 
                 const expenseByCategory = {};
                 monthlyTxs.filter(t => t.type === 'expense').forEach(t => { const category = budgetApp.config.categories.expense.find(c => c.id === t.category); if (category) { expenseByCategory[category.text] = (expenseByCategory[category.text] || 0) + t.amount; } });
@@ -366,8 +328,7 @@ const budgetApp = {
         handleListClick(e) {
             const editBtn = e.target.closest('.edit-btn');
             if (editBtn) {
-                const wrapper = e.target.closest('.transaction-item-wrapper');
-                alert("수정 기능은 현재 개발 중입니다."); // Placeholder for future edit functionality
+                alert("수정 기능은 현재 개발 중입니다. '추가' 탭에서 새 내역을 작성해주세요.");
             }
         },
         handleTypeChange(e) { const selectedType = e.target.dataset.type; this.setActiveTypeButton(selectedType, '.transaction-type-btn'); budgetApp.ui.updateCategoryOptions(selectedType); },
@@ -377,7 +338,6 @@ const budgetApp = {
         handleAiFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 budgetApp.state.aiImageBase64 = e.target.result.split(',')[1];
@@ -391,25 +351,15 @@ const budgetApp = {
         },
 
         async handleAiAnalyzeClick() {
-            if (!budgetApp.state.aiImageBase64) {
-                alert("분석할 이미지를 먼저 선택해주세요.");
-                return;
-            }
-
+            if (!budgetApp.state.aiImageBase64) { alert("분석할 이미지를 먼저 선택해주세요."); return; }
             const statusContainer = budgetApp.dom.aiStatusContainer;
             statusContainer.innerHTML = `<div class="flex items-center justify-center p-4"><div class="loader"></div><p class="ml-4 text-gray-600">AI가 이미지를 분석 중입니다...</p></div>`;
             budgetApp.dom.aiAnalyzeBtn.disabled = true;
 
             try {
                 const extractedData = await budgetApp.api.analyzeReceiptImage(budgetApp.state.aiImageBase64);
-                
-                if (!extractedData || extractedData.length === 0) {
-                    statusContainer.innerHTML = `<p class="text-center text-red-500">이미지에서 거래 내역을 찾을 수 없습니다.</p>`;
-                    return;
-                }
-                
+                if (!extractedData || extractedData.length === 0) { statusContainer.innerHTML = `<p class="text-center text-red-500">이미지에서 거래 내역을 찾을 수 없습니다.</p>`; return; }
                 this.displayAiResults(extractedData);
-
             } catch (error) {
                 statusContainer.innerHTML = `<p class="text-center text-red-500">분석 중 오류가 발생했습니다: ${error.message}</p>`;
             } finally {
@@ -430,8 +380,7 @@ const budgetApp = {
                             <p class="font-medium">${item.description}</p>
                             <p class="text-gray-500">${item.date} / ₩${item.amount.toLocaleString()} / ${category.text}</p>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
             resultsHtml += `</div><button id="add-ai-results-btn" class="w-full mt-4 bg-secondary text-white font-semibold py-3 rounded-lg !rounded-button">선택한 내역 추가하기</button>`;
             statusContainer.innerHTML = resultsHtml;
@@ -446,30 +395,20 @@ const budgetApp = {
             data.forEach(item => {
                 const newTx = {
                     id: `tx${Date.now() + Math.random()}`,
-                    type: 'expense', // Assuming all are expenses from image
+                    type: 'expense',
                     amount: item.amount,
                     date: item.date,
                     text: item.description,
                     category: this.findCategoryId(item.category_guess, 'expense')
                 };
-                // Simple duplicate check
                 const isDuplicate = budgetApp.state.transactions.some(t => t.date === newTx.date && t.amount === newTx.amount && t.text === newTx.text);
-                if (!isDuplicate) {
-                    budgetApp.core.addTransaction(newTx);
-                    addedCount++;
-                }
+                if (!isDuplicate) { budgetApp.core.addTransaction(newTx); addedCount++; }
             });
-
-            if (addedCount > 0) {
-                alert(`${addedCount}개의 새로운 거래 내역을 추가했습니다.`);
-                budgetApp.ui.showSection('transactions');
-            } else {
-                alert("추가할 새로운 거래 내역이 없습니다. (중복 내역 제외)");
-            }
+            if (addedCount > 0) { alert(`${addedCount}개의 새로운 거래 내역을 추가했습니다.`); budgetApp.ui.showSection('transactions'); } 
+            else { alert("추가할 새로운 거래 내역이 없습니다. (중복 내역 제외)"); }
             budgetApp.dom.aiStatusContainer.innerHTML = '';
             budgetApp.dom.aiImagePreviewContainer.classList.add('hidden');
             budgetApp.dom.aiUploadLabel.textContent = '영수증/내역 이미지 선택';
-
         },
 
         findCategoryId(categoryText, type) {
@@ -477,12 +416,9 @@ const budgetApp = {
             const categories = budgetApp.config.categories[type];
             for (const category of categories) {
                 for (const keyword of category.keywords) {
-                    if (categoryText.includes(keyword)) {
-                        return category.id;
-                    }
+                    if (categoryText.includes(keyword)) { return category.id; }
                 }
             }
-            // If no keyword matches, check category text itself
             const found = categories.find(c => c.text === categoryText);
             return found ? found.id : (type === 'expense' ? 'other' : 'other_income');
         }
