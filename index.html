@@ -150,10 +150,12 @@
         import pandas as pd
         import io
         import js
-        from pyodide.ffi import create_proxy
+        from pyodide.ffi import create_proxy, to_js
         import asyncio
 
+        # JavaScript 함수들을 미리 가져옵니다.
         js_add_transaction = js.budgetApp.core.addTransaction
+        js_is_duplicate = js.budgetApp.core.isDuplicateTransaction
 
         async def process_excel_file(event):
             status_container = js.document.getElementById("pyscript-status-container")
@@ -177,11 +179,9 @@
                 file_data = await file.arrayBuffer()
                 df = pd.read_excel(io.BytesIO(file_data), engine='xlrd')
 
-                # --- ✨ 스크린샷을 보고 실제 엑셀 파일의 컬럼명에 맞게 수정했습니다. ✨ ---
-                DATE_COLUMN = '이용일자'   # '이용일'에서 '이용일자'로 변경
-                AMOUNT_COLUMN = '승인금액' # '이용금액'에서 '승인금액'으로 변경
-                TEXT_COLUMN = '가맹점명'   # 이 컬럼명은 그대로 유지
-                # -----------------------------------------------------------
+                DATE_COLUMN = '이용일자'
+                AMOUNT_COLUMN = '이용금액(원)'
+                TEXT_COLUMN = '가맹점명'
                 
                 required_cols = [DATE_COLUMN, AMOUNT_COLUMN, TEXT_COLUMN]
                 if not all(col in df.columns for col in required_cols):
@@ -212,21 +212,18 @@
                 transactions_to_add = df_filtered[[DATE_COLUMN, AMOUNT_COLUMN, TEXT_COLUMN, 'category']].to_dict('records')
                 
                 for record in transactions_to_add:
-                    new_tx = {
+                    # 파이썬 딕셔너리를 자바스크립트 객체로 변환
+                    new_tx_js = to_js({
                         "id": f"tx{js.Date.now() + js.Math.random()}",
                         "type": 'expense',
                         "amount": record[AMOUNT_COLUMN],
                         "date": record[DATE_COLUMN],
                         "text": record[TEXT_COLUMN],
                         "category": record['category']
-                    }
+                    })
                     
-                    is_duplicate = js.budgetApp.state.transactions.some(create_proxy(
-                        lambda t: t.date == new_tx['date'] and t.amount == new_tx['amount'] and t.text == new_tx['text']
-                    ))
-
-                    if not is_duplicate:
-                        js_add_transaction(new_tx)
+                    if not js_is_duplicate(new_tx_js):
+                        js_add_transaction(new_tx_js)
                         added_count += 1
                 
                 status_container.innerHTML = f"""
@@ -237,8 +234,10 @@
                 </div>
                 """
                 
-                await asyncio.sleep(2)
-                js.budgetApp.ui.showSection('transactions')
+                # '내역' 탭으로 자동 이동하여 결과 확인 (성공 시에만)
+                if added_count > 0:
+                    await asyncio.sleep(2)
+                    js.budgetApp.ui.showSection('transactions')
 
             except Exception as e:
                 status_container.innerHTML = f"""
@@ -414,6 +413,15 @@
                 budgetApp.state.transactions.unshift(plainTx); 
                 this.sortTransactions(); 
                 budgetApp.api.saveTransactions(); 
+            },
+            // ✨ 데이터 타입까지 고려하는, 더욱 안전해진 중복 체크 함수입니다. ✨
+            isDuplicateTransaction(newTx) {
+                const plainTx = (typeof newTx.toJs === 'function') ? newTx.toJs() : newTx;
+                return budgetApp.state.transactions.some(t => 
+                    t.date === plainTx.date && 
+                    Number(t.amount) === Number(plainTx.amount) && // 숫자로 변환하여 비교
+                    t.text === plainTx.text
+                );
             },
             updateTransaction(updatedTx) { const index = budgetApp.state.transactions.findIndex(t => t.id === updatedTx.id); if (index > -1) { budgetApp.state.transactions[index] = updatedTx; this.sortTransactions(); budgetApp.api.saveTransactions(); } },
             deleteTransaction(txId) { budgetApp.state.transactions = budgetApp.state.transactions.filter(t => t.id !== txId); budgetApp.api.saveTransactions(); },
