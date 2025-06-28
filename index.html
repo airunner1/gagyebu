@@ -177,9 +177,11 @@
                 file_data = await file.arrayBuffer()
                 df = pd.read_excel(io.BytesIO(file_data), engine='xlrd')
 
-                DATE_COLUMN = '이용일'
-                AMOUNT_COLUMN = '이용금액'
-                TEXT_COLUMN = '가맹점명'
+                # --- ✨ 스크린샷을 보고 실제 엑셀 파일의 컬럼명에 맞게 수정했습니다. ✨ ---
+                DATE_COLUMN = '이용일자'   # '이용일'에서 '이용일자'로 변경
+                AMOUNT_COLUMN = '승인금액' # '이용금액'에서 '승인금액'으로 변경
+                TEXT_COLUMN = '가맹점명'   # 이 컬럼명은 그대로 유지
+                # -----------------------------------------------------------
                 
                 required_cols = [DATE_COLUMN, AMOUNT_COLUMN, TEXT_COLUMN]
                 if not all(col in df.columns for col in required_cols):
@@ -270,7 +272,6 @@
         },
         config: {
             localStorageKey: 'budgetAppTransactions_v12',
-            // --- ✨ 여기가 바로 강화된 키워드 규칙입니다! ✨ ---
             categories: {
                 expense: [
                     { 
@@ -408,8 +409,7 @@
         },
 
         core: {
-            addTransaction(newTx) { 
-                // PyScript에서 이 함수를 호출할 때 newTx가 PyProxy 객체일 수 있으므로 일반 JS 객체로 변환
+            addTransaction(newTx) {
                 const plainTx = (typeof newTx.toJs === 'function') ? newTx.toJs() : newTx;
                 budgetApp.state.transactions.unshift(plainTx); 
                 this.sortTransactions(); 
@@ -425,11 +425,10 @@
             loadTransactions() {
                 const stored = localStorage.getItem(budgetApp.config.localStorageKey);
                 if (stored) { budgetApp.state.transactions = JSON.parse(stored); }
-                this.saveTransactions(); // 초기 데이터가 없을 경우 빈 배열이라도 저장
+                this.saveTransactions();
             },
             saveTransactions() { localStorage.setItem(budgetApp.config.localStorageKey, JSON.stringify(budgetApp.state.transactions)); },
             async analyzeReceiptImage(base64ImageData) {
-                // 이 부분은 API 키가 필요합니다.
                 const apiKey = ""; // 여기에 본인의 Gemini API 키를 입력하세요.
                 if (!apiKey) {
                     alert("Gemini API 키가 필요합니다. budgetApp.api.analyzeReceiptImage 함수 내에 키를 입력해주세요.");
@@ -490,8 +489,8 @@
                     }
                 },
                 add() { budgetApp.state.editingTxId = null; budgetApp.dom.formTitle.textContent = '새 거래 추가'; budgetApp.dom.saveBtn.textContent = '거래 저장'; budgetApp.dom.deleteBtn.classList.add('hidden'); budgetApp.dom.form.reset(); budgetApp.dom.dateInput.value = new Date().toISOString().slice(0, 10); budgetApp.events.setActiveTypeButton('expense'); budgetApp.ui.updateCategoryOptions('expense'); },
-                ai() { /* AI 섹션 UI 초기화 */ },
-                excel() { /* PyScript가 직접 내용을 그리므로 별도의 render 함수는 필요 없음 */ }
+                ai() {},
+                excel() {}
             },
             populateFilters() { budgetApp.dom.filterContainer.innerHTML = budgetApp.config.filters.map((f, i) => `<button data-filter="${f.id}" class="filter-btn whitespace-nowrap px-4 py-2 text-sm font-medium rounded-full ${i === 0 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}">${f.text}</button>`).join(''); },
             updateCategoryOptions(type) { budgetApp.dom.categorySelect.innerHTML = budgetApp.config.categories[type].map(c => `<option value="${c.id}">${c.text}</option>`).join(''); },
