@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Budget App (Mobile Fixed)</title>
+    <title>AI Budget App (Excel 통합)</title>
+
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 
-                        primary: '#4F46E5', 
-                        secondary: '#10B981',
-                        danger: '#EF4444' 
-                    },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', danger: '#EF4444' },
                     borderRadius: { 'button': '8px' }
                 }
             }
@@ -34,7 +34,6 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Header -->
     <header class="fixed top-0 w-full bg-white shadow-sm z-50">
         <div class="flex items-center justify-between px-4 py-3 max-w-4xl mx-auto">
             <h1 class="text-xl font-bold text-primary">Budget App</h1>
@@ -42,10 +41,8 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="pt-16 pb-20 min-h-screen">
         <div class="max-w-4xl mx-auto">
-            <!-- Dashboard Section -->
             <section id="dashboard-section" class="px-4 py-4">
                 <div class="flex items-center justify-between mb-4">
                     <button id="dashboard-prev-month" class="p-2 rounded-full hover:bg-gray-100"><i class="ri-arrow-left-s-line ri-xl"></i></button>
@@ -71,28 +68,25 @@
                 <div id="recent-transactions-container" class="bg-white rounded-xl shadow-sm"></div>
             </section>
 
-            <!-- Transactions Section -->
             <section id="transactions-section" class="hidden px-4 py-4">
                 <h2 class="text-xl font-semibold mb-4">전체 거래 내역</h2>
                 <div id="transactions-filter-container" class="flex space-x-2 mb-4 overflow-x-auto pb-2"></div>
                 <div id="transactions-list-container"></div>
             </section>
 
-            <!-- Add Transaction Section -->
             <section id="add-section" class="hidden px-4 py-4">
                  <h2 id="form-title" class="text-xl font-semibold mb-4">새 거래 추가</h2>
-                <form id="transaction-form" class="space-y-4">
-                    <div><p class="text-sm font-medium text-gray-700 mb-2">거래 유형</p><div class="flex bg-gray-100 rounded-full p-1"><button type="button" data-type="expense" class="transaction-type-btn flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium">지출</button><button type="button" data-type="income" class="transaction-type-btn flex-1 py-2 rounded-full text-gray-600 text-sm font-medium">수입</button></div></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="amount">금액</label><div class="relative"><div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">₩</div><input type="number" id="amount" class="hide-arrows w-full pl-7 pr-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary" placeholder="0" required></div></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="text">내용</label><input type="text" id="text" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary" placeholder="예: 스타벅스 커피" required></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="category">카테고리</label><div class="relative"><select id="category" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary appearance-none"></select><div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"><i class="ri-arrow-down-s-line text-gray-500"></i></div></div></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1" for="date">날짜</label><input type="date" id="date" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary"></div>
-                    <button id="save-btn" type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold !rounded-button mt-6">거래 저장</button>
-                    <button id="delete-btn" type="button" class="hidden w-full bg-danger text-white py-3 rounded-lg font-semibold !rounded-button mt-2">삭제하기</button>
-                </form>
+                 <form id="transaction-form" class="space-y-4">
+                     <div><p class="text-sm font-medium text-gray-700 mb-2">거래 유형</p><div class="flex bg-gray-100 rounded-full p-1"><button type="button" data-type="expense" class="transaction-type-btn flex-1 py-2 rounded-full bg-primary text-white text-sm font-medium">지출</button><button type="button" data-type="income" class="transaction-type-btn flex-1 py-2 rounded-full text-gray-600 text-sm font-medium">수입</button></div></div>
+                     <div><label class="block text-sm font-medium text-gray-700 mb-1" for="amount">금액</label><div class="relative"><div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">₩</div><input type="number" id="amount" class="hide-arrows w-full pl-7 pr-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary" placeholder="0" required></div></div>
+                     <div><label class="block text-sm font-medium text-gray-700 mb-1" for="text">내용</label><input type="text" id="text" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary" placeholder="예: 스타벅스 커피" required></div>
+                     <div><label class="block text-sm font-medium text-gray-700 mb-1" for="category">카테고리</label><div class="relative"><select id="category" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary appearance-none"></select><div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"><i class="ri-arrow-down-s-line text-gray-500"></i></div></div></div>
+                     <div><label class="block text-sm font-medium text-gray-700 mb-1" for="date">날짜</label><input type="date" id="date" class="w-full px-3 py-2 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-primary"></div>
+                     <button id="save-btn" type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold !rounded-button mt-6">거래 저장</button>
+                     <button id="delete-btn" type="button" class="hidden w-full bg-danger text-white py-3 rounded-lg font-semibold !rounded-button mt-2">삭제하기</button>
+                 </form>
             </section>
             
-            <!-- AI Analysis Section -->
             <section id="ai-section" class="hidden px-4 py-4">
                 <h2 class="text-xl font-semibold mb-4">AI 영수증 분석</h2>
                 <div class="bg-white p-6 rounded-xl shadow-sm space-y-4">
@@ -114,266 +108,475 @@
                     <div id="ai-status-container" class="pt-4"></div>
                 </div>
             </section>
+
+            <section id="excel-section" class="hidden px-4 py-4">
+                <h2 class="text-xl font-semibold mb-4">Excel 파일로 내역 가져오기</h2>
+                <div class="bg-white p-6 rounded-xl shadow-sm space-y-4">
+                    <p class="text-sm text-gray-600">
+                        현대카드 등 금융사에서 다운로드한 <b class="text-primary">.xls (Excel 97-2003)</b> 형식의
+                        거래 내역 파일을 업로드하면 자동으로 내역을 분석하고 가계부에 추가해줍니다.
+                    </p>
+                    
+                    <label for="excel-file-upload" class="w-full cursor-pointer bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-lg !rounded-button inline-flex items-center justify-center hover:bg-gray-200">
+                        <i class="ri-file-excel-2-line mr-2"></i>
+                        <span id="excel-upload-label">엑셀 파일 선택</span>
+                    </label>
+                    <input id="excel-file-upload" type="file" class="hidden" accept=".xls,application/vnd.ms-excel">
+                    
+                    <div id="pyscript-status-container" class="pt-4"></div>
+                </div>
+            </section>
         </div>
     </main>
 
-    <!-- Bottom Navigation -->
     <nav class="fixed bottom-0 w-full bg-white/80 backdrop-blur-sm shadow-lg border-t border-gray-200 z-50">
-        <div class="grid grid-cols-4 h-16 max-w-4xl mx-auto">
+        <div class="grid grid-cols-5 h-16 max-w-4xl mx-auto">
             <button data-tab="dashboard" class="flex flex-col items-center justify-center space-y-1 text-primary"><i class="ri-home-4-fill ri-lg"></i><span class="text-xs font-medium">홈</span></button>
             <button data-tab="transactions" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-list-check-2 ri-lg"></i><span class="text-xs font-medium">내역</span></button>
             <button data-tab="add" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-add-circle-line ri-lg"></i><span class="text-xs font-medium">추가</span></button>
             <button data-tab="ai" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-user-scan-line ri-lg"></i><span class="text-xs font-medium">AI 분석</span></button>
+            <button data-tab="excel" class="flex flex-col items-center justify-center space-y-1 text-gray-500"><i class="ri-upload-cloud-2-line ri-lg"></i><span class="text-xs font-medium">가져오기</span></button>
         </div>
     </nav>
 
-<script>
-const budgetApp = {
-    state: {
-        transactions: [],
-        currentDate: new Date(),
-        activeFilter: 'all',
-        editingTxId: null,
-        charts: { dashboard: null },
-        aiImageBase64: null,
-    },
-    config: {
-        localStorageKey: 'budgetAppTransactions_v12',
-        categories: {
-            expense: [
-                { id: 'food', text: '음식', icon: 'restaurant-2', keywords:['음식', '식사', '푸드', '레스토랑', '공덕', '밀국수'] }, 
-                { id: 'fashion', text: '패션', icon: 't-shirt', keywords:['패션','의류','쇼핑'] },
-                { id: 'date', text: '데이트', icon: 'heart-3', keywords:['데이트'] }, { id: 'points_expense', text: '포인트 사용', icon: 'star-half', keywords:['포인트'] },
-                { id: 'transport', text: '교통', icon: 'bus', keywords:['교통', '택시', '버스', '발렛'] }, { id: 'housing', text: '주거/통신', icon: 'home-gear', keywords:['통신','월세'] },
-                { id: 'leisure', text: '문화/여가', icon: 'gamepad', keywords:['여가','게임','영화'] }, { id: 'other', text: '기타 지출', icon: 'price-tag-3', keywords:['기타'] }
-            ],
-            income: [
-                { id: 'salary', text: '월급', icon: 'briefcase-4', keywords:['월급', '급여'] }, { id: 'investment', text: '투자', icon: 'line-chart', keywords:['투자','수익'] },
-                { id: 'offset', text: '상계', icon: 'swap-line', keywords:['상계'] }, { id: 'points_income', text: '포인트', icon: 'star', keywords:['포인트','적립'] }, 
-                { id: 'allowance', text: '용돈', icon: 'gift', keywords:['용돈'] }, { id: 'other_income', text: '기타 수입', icon: 'creative-commons-nd', keywords:['기타'] }
+    <py-config>
+        packages = ["pandas", "xlrd"]
+        [terminal]
+        selector = "#pyscript-status-container"
+        autoclose = true
+    </py-config>
+
+    <py-script>
+        import pandas as pd
+        import io
+        import js
+        from pyodide.ffi import create_proxy
+        import asyncio
+
+        js_add_transaction = js.budgetApp.core.addTransaction
+
+        async def process_excel_file(event):
+            status_container = js.document.getElementById("pyscript-status-container")
+            upload_label = js.document.getElementById("excel-upload-label")
+
+            file_list = event.target.files
+            if not file_list:
+                return
+            
+            file = file_list.item(0)
+            upload_label.innerText = file.name
+            status_container.innerHTML = """
+            <div class="flex items-center justify-center p-4">
+                <div class="loader"></div>
+                <p class="ml-4 text-gray-600">파일을 읽고 분석하는 중입니다...</p>
+            </div>
+            """
+            await asyncio.sleep(0)
+
+            try:
+                file_data = await file.arrayBuffer()
+                df = pd.read_excel(io.BytesIO(file_data), engine='xlrd')
+
+                DATE_COLUMN = '이용일'
+                AMOUNT_COLUMN = '이용금액'
+                TEXT_COLUMN = '가맹점명'
+                
+                required_cols = [DATE_COLUMN, AMOUNT_COLUMN, TEXT_COLUMN]
+                if not all(col in df.columns for col in required_cols):
+                    missing = [col for col in required_cols if col not in df.columns]
+                    raise ValueError(f"필수 컬럼({', '.join(missing)})이 파일에 없습니다.")
+                
+                df[DATE_COLUMN] = pd.to_datetime(df[DATE_COLUMN], errors='coerce').dt.strftime('%Y-%m-%d')
+                df[AMOUNT_COLUMN] = pd.to_numeric(df[AMOUNT_COLUMN].astype(str).str.replace(r'[^0-9]', '', regex=True)).fillna(0).astype(int)
+                
+                df_filtered = df[df[AMOUNT_COLUMN] > 0].copy()
+                
+                expense_categories = js.budgetApp.config.categories.expense.to_py()
+                
+                def find_category_id(text):
+                    if not isinstance(text, str): return 'other'
+                    text_lower = text.lower()
+                    for category in expense_categories:
+                        for keyword in category['keywords']:
+                            if keyword.lower() in text_lower:
+                                return category['id']
+                    return 'other'
+
+                df_filtered['category'] = df_filtered[TEXT_COLUMN].apply(find_category_id)
+                
+                added_count = 0
+                total_count = len(df_filtered)
+                
+                transactions_to_add = df_filtered[[DATE_COLUMN, AMOUNT_COLUMN, TEXT_COLUMN, 'category']].to_dict('records')
+                
+                for record in transactions_to_add:
+                    new_tx = {
+                        "id": f"tx{js.Date.now() + js.Math.random()}",
+                        "type": 'expense',
+                        "amount": record[AMOUNT_COLUMN],
+                        "date": record[DATE_COLUMN],
+                        "text": record[TEXT_COLUMN],
+                        "category": record['category']
+                    }
+                    
+                    is_duplicate = js.budgetApp.state.transactions.some(create_proxy(
+                        lambda t: t.date == new_tx['date'] and t.amount == new_tx['amount'] and t.text == new_tx['text']
+                    ))
+
+                    if not is_duplicate:
+                        js_add_transaction(new_tx)
+                        added_count += 1
+                
+                status_container.innerHTML = f"""
+                <div class='text-center p-4 bg-green-50 rounded-lg'>
+                  <h3 class='font-semibold text-lg text-green-800'>분석 완료!</h3>
+                  <p class='text-gray-700 mt-2'>총 {total_count}개의 내역 중 <b class='text-green-700'>{added_count}개</b>의 새로운 내역을 가계부에 추가했습니다.</p>
+                  <p class='text-sm text-gray-500'>(중복된 내역은 제외되었습니다)</p>
+                </div>
+                """
+                
+                await asyncio.sleep(2)
+                js.budgetApp.ui.showSection('transactions')
+
+            except Exception as e:
+                status_container.innerHTML = f"""
+                <div class='text-center p-4 bg-red-50 rounded-lg'>
+                  <h3 class='font-semibold text-lg text-red-800'>오류 발생</h3>
+                  <p class='text-gray-700 mt-2 font-mono bg-red-100 p-2 rounded'>{e}</p>
+                  <p class='text-sm text-gray-600 mt-3'>파일 형식(.xls)이나 내부 컬럼명을 확인해주세요.</p>
+                </div>
+                """
+            finally:
+                event.target.value = ""
+                upload_label.innerText = "다른 파일 선택"
+
+        def setup():
+            file_input = js.document.getElementById("excel-file-upload")
+            file_input.addEventListener("change", create_proxy(process_excel_file))
+            print("PyScript 핸들러가 설정되었습니다.")
+        
+        setup()
+    </py-script>
+
+    <script>
+    const budgetApp = {
+        state: {
+            transactions: [],
+            currentDate: new Date(),
+            activeFilter: 'all',
+            editingTxId: null,
+            charts: { dashboard: null },
+            aiImageBase64: null,
+        },
+        config: {
+            localStorageKey: 'budgetAppTransactions_v12',
+            // --- ✨ 여기가 바로 강화된 키워드 규칙입니다! ✨ ---
+            categories: {
+                expense: [
+                    { 
+                        id: 'food', 
+                        text: '음식', 
+                        icon: 'restaurant-2', 
+                        keywords: [
+                            '음식', '식사', '푸드', '레스토랑', '카페', '커피', '배달', '마켓', '마트',
+                            '스타벅스', '투썸', '이디야', '메가커피', '컴포즈', '빽다방',
+                            '배달의민족', '배민', '요기요', '쿠팡이츠',
+                            '맥도날드', '버거킹', '롯데리아', '서브웨이',
+                            '교촌', 'BHC', 'BBQ', '굽네',
+                            '파리바게뜨', '뚜레쥬르',
+                            '마켓컬리', '오아시스', '이마트', '롯데마트', '홈플러스', '코스트코', '트레이더스',
+                            'GS THE FRESH', 'GS수퍼'
+                        ] 
+                    },
+                    { 
+                        id: 'leisure',
+                        text: '문화/여가', 
+                        icon: 'gamepad', 
+                        keywords: [
+                            '여가', '게임', '영화', '데이트', '숙박', '여행', '전시', '공연', '서점', '문구',
+                            'CGV', '롯데시네마', '메가박스',
+                            '넷플릭스', '유튜브', '웨이브', '티빙', '멜론', '지니',
+                            '교보문고', '영풍문고', '알라딘', 'YES24',
+                            '야놀자', '여기어때', '아고다', '호텔스컴바인',
+                            '다이소', '아트박스',
+                            'GS25', 'CU', '세븐일레븐', '이마트24', '미니스톱'
+                        ] 
+                    },
+                    { 
+                        id: 'fashion', 
+                        text: '패션/쇼핑',
+                        icon: 't-shirt', 
+                        keywords: [
+                            '패션', '의류', '쇼핑', '백화점', '아울렛',
+                            '무신사', '지그재그', '에이블리', 'W컨셉', '29CM', '브랜디',
+                            '유니클로', '자라', 'H&M', '스파오', '탑텐',
+                            '나이키', '아디다스',
+                            '쿠팡', '11번가', 'G마켓', '옥션', 'SSG', '롯데ON', '네이버페이'
+                        ] 
+                    },
+                    { 
+                        id: 'housing', 
+                        text: '주거/통신', 
+                        icon: 'home-gear', 
+                        keywords: ['통신', '월세', '관리비', '가스', '전기', '수도', 'SKT', 'KT', 'LGU+', '알뜰폰'] 
+                    },
+                    { 
+                        id: 'transport', 
+                        text: '교통', 
+                        icon: 'bus', 
+                        keywords: ['교통', '택시', '버스', '발렛', '주차', '지하철', '고속버스', '항공', '카카오T', '티맵', '코레일', 'SRT', '티머니', '캐시비'] 
+                    },
+                    { 
+                        id: 'points_expense', 
+                        text: '포인트 사용', 
+                        icon: 'star-half', 
+                        keywords: ['포인트', '멤버십', '적립']
+                    },
+                    { 
+                        id: 'other', 
+                        text: '기타 지출', 
+                        icon: 'price-tag-3', 
+                        keywords: ['기타']
+                    }
+                ],
+                income: [
+                    { id: 'salary', text: '월급', icon: 'briefcase-4', keywords:['월급', '급여'] }, { id: 'investment', text: '투자', icon: 'line-chart', keywords:['투자','수익'] },
+                    { id: 'offset', text: '상계', icon: 'swap-line', keywords:['상계'] }, { id: 'points_income', text: '포인트', icon: 'star', keywords:['포인트','적립'] },
+                    { id: 'allowance', text: '용돈', icon: 'gift', keywords:['용돈'] }, { id: 'other_income', text: '기타 수입', icon: 'creative-commons-nd', keywords:['기타'] }
+                ]
+            },
+            filters: [
+                { id: 'all', text: '전체' }, { id: 'expense', text: '지출' }, { id: 'income', text: '수입' },
+                { id: 'food', text: '음식' }, { id: 'fashion', text: '패션/쇼핑' }, { id: 'leisure', text: '문화/여가' }
             ]
         },
-        filters: [
-            { id: 'all', text: '전체' }, { id: 'expense', text: '지출' }, { id: 'income', text: '수입' },
-            { id: 'food', text: '음식' }, { id: 'fashion', text: '패션' }, { id: 'date', text: '데이트' }
-        ]
-    },
-    dom: {},
+        dom: {},
 
-    init() {
-        this.cacheDom();
-        this.initCharts(); 
-        this.events.init();
-        this.api.loadTransactions();
-        this.ui.populateFilters();
-        this.ui.showSection('dashboard');
-        console.log("Budget App Initialized (Mobile Fix)");
-    },
-    
-    initCharts() {
-        this.state.charts.dashboard = echarts.init(this.dom.dashboardCategoryChart);
-        this.state.charts.dashboard.setOption({
-            tooltip: { trigger: 'item', formatter: p => `${p.name}:<br/><b>₩${p.value.toLocaleString()}</b> (${p.percent}%)` },
-            series: [{ type: 'sunburst', radius: ['30%', '90%'], itemStyle: { borderRadius: 7, borderWidth: 2 }, label: { show: true, formatter: '{b}', fontSize: 12, color: '#333' }, emphasis: { label: { show: true, fontSize: '14', fontWeight: 'bold' } }, data: [] }]
-        });
-    },
+        init() {
+            this.cacheDom();
+            this.initCharts();
+            this.events.init();
+            this.api.loadTransactions();
+            this.ui.populateFilters();
+            this.ui.showSection('dashboard');
+            console.log("Budget App Initialized (Excel 통합 버전)");
+        },
 
-    cacheDom() {
-        this.dom = {
-            main: document.querySelector('main'),
-            sections: { dashboard: document.getElementById('dashboard-section'), transactions: document.getElementById('transactions-section'), add: document.getElementById('add-section'), ai: document.getElementById('ai-section') },
-            nav: document.querySelector('nav'),
-            dashboardDisplay: document.getElementById('dashboard-month-display'),
-            totalBalance: document.getElementById('total-balance'),
-            totalIncome: document.getElementById('total-income'),
-            totalExpense: document.getElementById('total-expense'),
-            recentTransactions: document.getElementById('recent-transactions-container'),
-            dashboardCategoryChart: document.getElementById('dashboard-category-chart'),
-            filterContainer: document.getElementById('transactions-filter-container'),
-            listContainer: document.getElementById('transactions-list-container'),
-            form: document.getElementById('transaction-form'),
-            formTitle: document.getElementById('form-title'),
-            saveBtn: document.getElementById('save-btn'),
-            deleteBtn: document.getElementById('delete-btn'),
-            typeButtons: document.querySelectorAll('.transaction-type-btn'),
-            amountInput: document.getElementById('amount'),
-            textInput: document.getElementById('text'),
-            categorySelect: document.getElementById('category'),
-            dateInput: document.getElementById('date'),
-            aiFileUpload: document.getElementById('ai-file-upload'),
-            aiUploadLabel: document.getElementById('ai-upload-label'),
-            aiImagePreviewContainer: document.getElementById('ai-image-preview-container'),
-            aiImagePreview: document.getElementById('ai-image-preview'),
-            aiAnalyzeBtn: document.getElementById('ai-analyze-btn'),
-            aiStatusContainer: document.getElementById('ai-status-container'),
-        };
-    },
+        initCharts() {
+            this.state.charts.dashboard = echarts.init(this.dom.dashboardCategoryChart);
+            this.state.charts.dashboard.setOption({
+                tooltip: { trigger: 'item', formatter: p => `${p.name}:<br/><b>₩${p.value.toLocaleString()}</b> (${p.percent}%)` },
+                series: [{ type: 'sunburst', radius: ['30%', '90%'], itemStyle: { borderRadius: 7, borderWidth: 2 }, label: { show: true, formatter: '{b}', fontSize: 12, color: '#333' }, emphasis: { label: { show: true, fontSize: '14', fontWeight: 'bold' } }, data: [] }]
+            });
+        },
 
-    core: {
-        addTransaction(newTx) { budgetApp.state.transactions.unshift(newTx); this.sortTransactions(); budgetApp.api.saveTransactions(); },
-        updateTransaction(updatedTx) { const index = budgetApp.state.transactions.findIndex(t => t.id === updatedTx.id); if (index > -1) { budgetApp.state.transactions[index] = updatedTx; this.sortTransactions(); budgetApp.api.saveTransactions(); } },
-        deleteTransaction(txId) { budgetApp.state.transactions = budgetApp.state.transactions.filter(t => t.id !== txId); budgetApp.api.saveTransactions(); },
-        sortTransactions() { budgetApp.state.transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); },
-        getTransactionsForMonth(date) { const year = date.getFullYear(); const month = date.getMonth(); return budgetApp.state.transactions.filter(t => { const txDate = new Date(t.date); return txDate.getFullYear() === year && txDate.getMonth() === month; }); },
-    },
+        cacheDom() {
+            this.dom = {
+                main: document.querySelector('main'),
+                sections: { 
+                    dashboard: document.getElementById('dashboard-section'), 
+                    transactions: document.getElementById('transactions-section'), 
+                    add: document.getElementById('add-section'), 
+                    ai: document.getElementById('ai-section'),
+                    excel: document.getElementById('excel-section')
+                },
+                nav: document.querySelector('nav'),
+                dashboardDisplay: document.getElementById('dashboard-month-display'),
+                totalBalance: document.getElementById('total-balance'),
+                totalIncome: document.getElementById('total-income'),
+                totalExpense: document.getElementById('total-expense'),
+                recentTransactions: document.getElementById('recent-transactions-container'),
+                dashboardCategoryChart: document.getElementById('dashboard-category-chart'),
+                filterContainer: document.getElementById('transactions-filter-container'),
+                listContainer: document.getElementById('transactions-list-container'),
+                form: document.getElementById('transaction-form'),
+                formTitle: document.getElementById('form-title'),
+                saveBtn: document.getElementById('save-btn'),
+                deleteBtn: document.getElementById('delete-btn'),
+                typeButtons: document.querySelectorAll('.transaction-type-btn'),
+                amountInput: document.getElementById('amount'),
+                textInput: document.getElementById('text'),
+                categorySelect: document.getElementById('category'),
+                dateInput: document.getElementById('date'),
+                aiFileUpload: document.getElementById('ai-file-upload'),
+                aiUploadLabel: document.getElementById('ai-upload-label'),
+                aiImagePreviewContainer: document.getElementById('ai-image-preview-container'),
+                aiImagePreview: document.getElementById('ai-image-preview'),
+                aiAnalyzeBtn: document.getElementById('ai-analyze-btn'),
+                aiStatusContainer: document.getElementById('ai-status-container'),
+            };
+        },
 
-    api: {
-        loadTransactions() {
-            const stored = localStorage.getItem(budgetApp.config.localStorageKey);
-            if (stored) { budgetApp.state.transactions = JSON.parse(stored); } else {
-                const today = new Date();
-                budgetApp.state.transactions = [
-                    { id: `tx${Date.now()+1}`, type: 'expense', amount: 12000, date: today.toISOString().slice(0,10), category: 'food', text: '점심 (파스타)' },
-                    { id: `tx${Date.now()+2}`, type: 'expense', amount: 55000, date: new Date(new Date().setDate(today.getDate() - 1)).toISOString().slice(0,10), category: 'fashion', text: 'H&M 티셔츠' },
-                    { id: `tx${Date.now()+3}`, type: 'income', amount: 3000000, date: new Date(new Date().setDate(today.getDate() - 2)).toISOString().slice(0,10), category: 'salary', text: `${today.getMonth()+1}월 급여` }
-                ];
-                budgetApp.core.sortTransactions();
-                this.saveTransactions();
+        core: {
+            addTransaction(newTx) { 
+                // PyScript에서 이 함수를 호출할 때 newTx가 PyProxy 객체일 수 있으므로 일반 JS 객체로 변환
+                const plainTx = (typeof newTx.toJs === 'function') ? newTx.toJs() : newTx;
+                budgetApp.state.transactions.unshift(plainTx); 
+                this.sortTransactions(); 
+                budgetApp.api.saveTransactions(); 
+            },
+            updateTransaction(updatedTx) { const index = budgetApp.state.transactions.findIndex(t => t.id === updatedTx.id); if (index > -1) { budgetApp.state.transactions[index] = updatedTx; this.sortTransactions(); budgetApp.api.saveTransactions(); } },
+            deleteTransaction(txId) { budgetApp.state.transactions = budgetApp.state.transactions.filter(t => t.id !== txId); budgetApp.api.saveTransactions(); },
+            sortTransactions() { budgetApp.state.transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); },
+            getTransactionsForMonth(date) { const year = date.getFullYear(); const month = date.getMonth(); return budgetApp.state.transactions.filter(t => { const txDate = new Date(t.date); return txDate.getFullYear() === year && txDate.getMonth() === month; }); },
+        },
+
+        api: {
+            loadTransactions() {
+                const stored = localStorage.getItem(budgetApp.config.localStorageKey);
+                if (stored) { budgetApp.state.transactions = JSON.parse(stored); }
+                this.saveTransactions(); // 초기 데이터가 없을 경우 빈 배열이라도 저장
+            },
+            saveTransactions() { localStorage.setItem(budgetApp.config.localStorageKey, JSON.stringify(budgetApp.state.transactions)); },
+            async analyzeReceiptImage(base64ImageData) {
+                // 이 부분은 API 키가 필요합니다.
+                const apiKey = ""; // 여기에 본인의 Gemini API 키를 입력하세요.
+                if (!apiKey) {
+                    alert("Gemini API 키가 필요합니다. budgetApp.api.analyzeReceiptImage 함수 내에 키를 입력해주세요.");
+                    throw new Error("API 키가 없습니다.");
+                }
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                const prompt = `You are an expert data extractor. Analyze the provided image of a transaction history. Extract every individual transaction. For each transaction, provide the date, description, and amount. Use the current year, 2025. The date format in the image 'MM. DD.' should be converted to 'YYYY-MM-DD'. The description is the store name or transaction reason. The amount is the number with a '원' suffix. Determine if it's 'income' or 'expense' (all transactions in the image are expenses). Finally, guess a category from the following list based on the description: 음식, 패션, 데이트, 교통, 기타 지출. Return a valid JSON array of objects.`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: "image/png", data: base64ImageData } }] }], generation_config: { response_mime_type: "application/json" }};
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) { throw new Error(`API Error: ${response.status} ${response.statusText}`); }
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts.length > 0) {
+                        return JSON.parse(result.candidates[0].content.parts[0].text);
+                    } else { throw new Error("AI did not return valid data."); }
+                } catch (error) { console.error("Gemini API Call failed:", error); throw error; }
             }
         },
-        saveTransactions() { localStorage.setItem(budgetApp.config.localStorageKey, JSON.stringify(budgetApp.state.transactions)); },
-        async analyzeReceiptImage(base64ImageData) {
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            const prompt = `You are an expert data extractor. Analyze the provided image of a transaction history. Extract every individual transaction. For each transaction, provide the date, description, and amount. Use the current year, 2025. The date format in the image 'MM. DD.' should be converted to 'YYYY-MM-DD'. The description is the store name or transaction reason. The amount is the number with a '원' suffix. Determine if it's 'income' or 'expense' (all transactions in the image are expenses). Finally, guess a category from the following list based on the description: 음식, 패션, 데이트, 교통, 기타 지출. Return a valid JSON array of objects.`;
-            const payload = { contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: "image/png", data: base64ImageData } }] }], generation_config: { response_mime_type: "application/json", response_schema: { type: "ARRAY", items: { type: "OBJECT", properties: { "date": { "type": "STRING", "description": "YYYY-MM-DD" }, "description": { "type": "STRING" }, "amount": { "type": "NUMBER" }, "category_guess": { "type": "STRING", "description": "Guess from '음식', '패션', '데이트', '교통', '기타 지출'"} }, "required": ["date", "description", "amount", "category_guess"] } } } };
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) { throw new Error(`API Error: ${response.status} ${response.statusText}`); }
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts.length > 0) {
-                    return JSON.parse(result.candidates[0].content.parts[0].text);
-                } else { throw new Error("AI did not return valid data."); }
-            } catch (error) { console.error("Gemini API Call failed:", error); throw error; }
-        }
-    },
 
-    ui: {
-        showSection(sectionId) {
-            Object.values(budgetApp.dom.sections).forEach(s => s.classList.add('hidden'));
-            budgetApp.dom.sections[sectionId].classList.remove('hidden');
-            const activeTab = budgetApp.dom.nav.querySelector(`[data-tab="${sectionId}"]`);
-            if (activeTab) { budgetApp.dom.nav.querySelectorAll('[data-tab]').forEach(t => t.classList.replace('text-primary', 'text-gray-500')); activeTab.classList.replace('text-gray-500', 'text-primary'); }
-            if (this.render[sectionId]) this.render[sectionId]();
-        },
-        render: {
-            dashboard() {
-                const { currentDate, transactions } = budgetApp.state;
-                const monthlyTxs = budgetApp.core.getTransactionsForMonth(currentDate);
-                let monthIncome = 0, monthExpense = 0;
-                monthlyTxs.forEach(t => t.type === 'income' ? monthIncome += t.amount : monthExpense += t.amount);
-                
-                budgetApp.dom.dashboardDisplay.textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월`;
-                budgetApp.dom.totalBalance.textContent = `₩${(monthIncome - monthExpense).toLocaleString()}`;
-                budgetApp.dom.totalIncome.textContent = `+₩${monthIncome.toLocaleString()}`;
-                budgetApp.dom.totalExpense.textContent = `-₩${monthExpense.toLocaleString()}`;
-
-                const recentTxs = transactions.slice(0, 5);
-                budgetApp.dom.recentTransactions.innerHTML = recentTxs.length > 0 ? `<div class="divide-y divide-gray-100">${recentTxs.map(t => budgetApp.ui.templates.transactionItem(t)).join('')}</div>` : `<div class="text-center p-8 text-gray-500">거래 내역이 없습니다.</div>`;
-
-                const expenseByCategory = {};
-                monthlyTxs.filter(t => t.type === 'expense').forEach(t => { const category = budgetApp.config.categories.expense.find(c => c.id === t.category); if (category) { expenseByCategory[category.text] = (expenseByCategory[category.text] || 0) + t.amount; } });
-                const chartData = Object.entries(expenseByCategory).map(([name, value]) => ({ name, value }));
-                budgetApp.state.charts.dashboard.setOption({ series: [{ data: chartData }] }, { notMerge: true });
+        ui: {
+            showSection(sectionId) {
+                Object.values(budgetApp.dom.sections).forEach(s => s.classList.add('hidden'));
+                if(budgetApp.dom.sections[sectionId]) {
+                   budgetApp.dom.sections[sectionId].classList.remove('hidden');
+                }
+                const activeTab = budgetApp.dom.nav.querySelector(`[data-tab="${sectionId}"]`);
+                if (activeTab) { budgetApp.dom.nav.querySelectorAll('[data-tab]').forEach(t => { t.classList.remove('text-primary'); t.classList.add('text-gray-500'); }); activeTab.classList.remove('text-gray-500'); activeTab.classList.add('text-primary'); }
+                if (this.render[sectionId]) this.render[sectionId]();
             },
-            transactions() {
-                const { transactions, activeFilter } = budgetApp.state;
-                const filteredTxs = transactions.filter(t => { if (activeFilter === 'all') return true; if (activeFilter === 'income' || activeFilter === 'expense') return t.type === activeFilter; return t.category === activeFilter; });
-                if (filteredTxs.length === 0) { budgetApp.dom.listContainer.innerHTML = `<div class="text-center py-16 text-gray-500">해당 내역이 없습니다.</div>`; } else {
-                    const grouped = filteredTxs.reduce((acc, tx) => { (acc[tx.date] = acc[tx.date] || []).push(tx); return acc; }, {});
-                    let html = '';
-                    Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a)).forEach(date => { html += `<div class="mb-4"><h3 class="font-semibold text-gray-600 px-1 mb-2">${new Date(date+'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}</h3><div class="bg-white rounded-xl shadow-sm">${grouped[date].map(tx => budgetApp.ui.templates.transactionItem(tx)).join('')}</div></div>`; });
-                    budgetApp.dom.listContainer.innerHTML = html;
+            render: {
+                dashboard() {
+                    const { currentDate, transactions } = budgetApp.state;
+                    const monthlyTxs = budgetApp.core.getTransactionsForMonth(currentDate);
+                    let monthIncome = 0, monthExpense = 0;
+                    monthlyTxs.forEach(t => t.type === 'income' ? monthIncome += t.amount : monthExpense += t.amount);
+                    
+                    budgetApp.dom.dashboardDisplay.textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월`;
+                    budgetApp.dom.totalBalance.textContent = `₩${(monthIncome - monthExpense).toLocaleString()}`;
+                    budgetApp.dom.totalIncome.textContent = `+₩${monthIncome.toLocaleString()}`;
+                    budgetApp.dom.totalExpense.textContent = `-₩${monthExpense.toLocaleString()}`;
+
+                    const recentTxs = budgetApp.state.transactions.slice(0, 5);
+                    budgetApp.dom.recentTransactions.innerHTML = recentTxs.length > 0 ? `<div class="divide-y divide-gray-100">${recentTxs.map(t => budgetApp.ui.templates.transactionItem(t)).join('')}</div>` : `<div class="text-center p-8 text-gray-500">거래 내역이 없습니다.</div>`;
+
+                    const expenseByCategory = {};
+                    monthlyTxs.filter(t => t.type === 'expense').forEach(t => { const category = budgetApp.config.categories.expense.find(c => c.id === t.category); if (category) { expenseByCategory[category.text] = (expenseByCategory[category.text] || 0) + t.amount; } });
+                    const chartData = Object.entries(expenseByCategory).map(([name, value]) => ({ name, value }));
+                    budgetApp.state.charts.dashboard.setOption({ series: [{ data: chartData }] }, { notMerge: true });
+                },
+                transactions() {
+                    const { transactions, activeFilter } = budgetApp.state;
+                    const filteredTxs = transactions.filter(t => { if (activeFilter === 'all') return true; if (activeFilter === 'income' || activeFilter === 'expense') return t.type === activeFilter; return t.category === activeFilter; });
+                    if (filteredTxs.length === 0) { budgetApp.dom.listContainer.innerHTML = `<div class="text-center py-16 text-gray-500">해당 내역이 없습니다.</div>`; } else {
+                        const grouped = filteredTxs.reduce((acc, tx) => { (acc[tx.date] = acc[tx.date] || []).push(tx); return acc; }, {});
+                        let html = '';
+                        Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a)).forEach(date => { html += `<div class="mb-4"><h3 class="font-semibold text-gray-600 px-1 mb-2">${new Date(date+'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}</h3><div class="bg-white rounded-xl shadow-sm">${grouped[date].map(tx => budgetApp.ui.templates.transactionItem(tx)).join('')}</div></div>`; });
+                        budgetApp.dom.listContainer.innerHTML = html;
+                    }
+                },
+                add() { budgetApp.state.editingTxId = null; budgetApp.dom.formTitle.textContent = '새 거래 추가'; budgetApp.dom.saveBtn.textContent = '거래 저장'; budgetApp.dom.deleteBtn.classList.add('hidden'); budgetApp.dom.form.reset(); budgetApp.dom.dateInput.value = new Date().toISOString().slice(0, 10); budgetApp.events.setActiveTypeButton('expense'); budgetApp.ui.updateCategoryOptions('expense'); },
+                ai() { /* AI 섹션 UI 초기화 */ },
+                excel() { /* PyScript가 직접 내용을 그리므로 별도의 render 함수는 필요 없음 */ }
+            },
+            populateFilters() { budgetApp.dom.filterContainer.innerHTML = budgetApp.config.filters.map((f, i) => `<button data-filter="${f.id}" class="filter-btn whitespace-nowrap px-4 py-2 text-sm font-medium rounded-full ${i === 0 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}">${f.text}</button>`).join(''); },
+            updateCategoryOptions(type) { budgetApp.dom.categorySelect.innerHTML = budgetApp.config.categories[type].map(c => `<option value="${c.id}">${c.text}</option>`).join(''); },
+            templates: {
+                transactionItem(t) {
+                    const allCategories = [...budgetApp.config.categories.expense, ...budgetApp.config.categories.income];
+                    const category = allCategories.find(c => c.id === t.category) || {};
+                    const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
+                    return `
+                    <div class="transaction-item-wrapper border-b border-gray-100 last:border-b-0" data-id="${t.id}">
+                        <div class="display-view flex items-center p-4">
+                            <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl mr-4"><i class="ri-${category.icon || 'question'}-line ri-lg text-gray-700"></i></div>
+                            <div class="flex-1"><p class="font-medium leading-tight">${t.text}</p><p class="text-sm text-gray-500">${new Date(t.date+'T00:00:00').toLocaleDateString('ko-KR', {month:'long', day:'numeric'})}</p></div>
+                            <p class="font-bold text-lg ${color} mr-4">${t.type === 'income' ? '+' : '-'}₩${t.amount.toLocaleString()}</p>
+                            <button class="edit-btn p-2 rounded-full hover:bg-gray-200"><i class="ri-pencil-line text-gray-500"></i></button>
+                        </div>
+                    </div>`;
+                }
+            }
+        },
+        
+        events: {
+            init() {
+                budgetApp.dom.nav.addEventListener('click', e => { const tab = e.target.closest('button[data-tab]'); if (tab && !tab.disabled) budgetApp.ui.showSection(tab.dataset.tab); });
+                budgetApp.dom.main.addEventListener('click', this.handleListClick.bind(this));
+                document.getElementById('dashboard-prev-month').addEventListener('click', () => this.changeMonth(-1, 'dashboard'));
+                document.getElementById('dashboard-next-month').addEventListener('click', () => this.changeMonth(1, 'dashboard'));
+                document.getElementById('see-all-btn').addEventListener('click', () => budgetApp.ui.showSection('transactions'));
+                budgetApp.dom.form.addEventListener('submit', this.handleFormSubmit.bind(this));
+                budgetApp.dom.typeButtons.forEach(btn => btn.addEventListener('click', this.handleTypeChange.bind(this)));
+                budgetApp.dom.filterContainer.addEventListener('click', this.handleFilterClick);
+                budgetApp.dom.aiFileUpload.addEventListener('change', this.handleAiFileSelect.bind(this));
+                budgetApp.dom.aiAnalyzeBtn.addEventListener('click', this.handleAiAnalyzeClick.bind(this));
+            },
+            changeMonth(direction, view) { budgetApp.state.currentDate.setMonth(budgetApp.state.currentDate.getMonth() + direction, 1); if (budgetApp.ui.render[view]) { budgetApp.ui.render[view](); } },
+            handleFormSubmit(e) { e.preventDefault(); const form = budgetApp.dom; const amount = parseInt(form.amountInput.value); if (!amount || amount <= 0 || !form.textInput.value) { alert("금액과 내용을 올바르게 입력해주세요."); return; } const type = document.querySelector('.transaction-type-btn.bg-primary').dataset.type; const newTx = { id: `tx${Date.now()}`, type, amount, date: form.dateInput.value, category: form.categorySelect.value, text: form.textInput.value }; budgetApp.core.addTransaction(newTx); alert("저장되었습니다."); budgetApp.ui.showSection('dashboard'); },
+            handleListClick(e) {
+                const editBtn = e.target.closest('.edit-btn');
+                if (editBtn) {
+                    alert("수정 기능은 현재 개발 중입니다. '추가' 탭에서 새 내역을 작성해주세요.");
                 }
             },
-            add() { budgetApp.state.editingTxId = null; budgetApp.dom.formTitle.textContent = '새 거래 추가'; budgetApp.dom.saveBtn.textContent = '거래 저장'; budgetApp.dom.deleteBtn.classList.add('hidden'); budgetApp.dom.form.reset(); budgetApp.dom.dateInput.value = new Date().toISOString().slice(0, 10); budgetApp.events.setActiveTypeButton('expense'); budgetApp.ui.updateCategoryOptions('expense'); },
-            ai() { /* Reset the AI section UI */ }
-        },
-        populateFilters() { budgetApp.dom.filterContainer.innerHTML = budgetApp.config.filters.map((f, i) => `<button data-filter="${f.id}" class="filter-btn whitespace-nowrap px-4 py-2 text-sm font-medium rounded-full ${i === 0 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}">${f.text}</button>`).join(''); },
-        updateCategoryOptions(type) { budgetApp.dom.categorySelect.innerHTML = budgetApp.config.categories[type].map(c => `<option value="${c.id}">${c.text}</option>`).join(''); },
-        toggleEditView(wrapper, showEdit) { wrapper.querySelector('.display-view').classList.toggle('hidden', showEdit); wrapper.querySelector('.edit-view').classList.toggle('hidden', !showEdit); },
-        templates: {
-            transactionItem(t) {
-                const allCategories = [...budgetApp.config.categories.expense, ...budgetApp.config.categories.income];
-                const category = allCategories.find(c => c.id === t.category) || {};
-                const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
-                return `
-                <div class="transaction-item-wrapper border-b border-gray-100 last:border-b-0" data-id="${t.id}">
-                    <div class="display-view flex items-center p-4">
-                        <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-xl mr-4"><i class="ri-${category.icon || 'question'}-line ri-lg text-gray-700"></i></div>
-                        <div class="flex-1"><p class="font-medium leading-tight">${t.text}</p><p class="text-sm text-gray-500">${new Date(t.date+'T00:00:00').toLocaleDateString('ko-KR', {month:'long', day:'numeric'})}</p></div>
-                        <p class="font-bold text-lg ${color} mr-4">${t.type === 'income' ? '+' : '-'}₩${t.amount.toLocaleString()}</p>
-                        <button class="edit-btn p-2 rounded-full hover:bg-gray-200"><i class="ri-pencil-line text-gray-500"></i></button>
-                    </div>
-                </div>`;
-            }
-        }
-    },
-    
-    events: {
-        init() {
-            budgetApp.dom.nav.addEventListener('click', e => { const tab = e.target.closest('button[data-tab]'); if (tab && !tab.disabled) budgetApp.ui.showSection(tab.dataset.tab); });
-            budgetApp.dom.main.addEventListener('click', this.handleListClick.bind(this));
-            document.getElementById('dashboard-prev-month').addEventListener('click', () => this.changeMonth(-1, 'dashboard'));
-            document.getElementById('dashboard-next-month').addEventListener('click', () => this.changeMonth(1, 'dashboard'));
-            document.getElementById('see-all-btn').addEventListener('click', () => budgetApp.ui.showSection('transactions'));
-            budgetApp.dom.form.addEventListener('submit', this.handleFormSubmit.bind(this));
-            budgetApp.dom.typeButtons.forEach(btn => btn.addEventListener('click', this.handleTypeChange.bind(this)));
-            budgetApp.dom.filterContainer.addEventListener('click', this.handleFilterClick);
-            budgetApp.dom.aiFileUpload.addEventListener('change', this.handleAiFileSelect.bind(this));
-            budgetApp.dom.aiAnalyzeBtn.addEventListener('click', this.handleAiAnalyzeClick.bind(this));
-        },
-        changeMonth(direction, view) { budgetApp.state.currentDate.setMonth(budgetApp.state.currentDate.getMonth() + direction, 1); if (budgetApp.ui.render[view]) { budgetApp.ui.render[view](); } },
-        handleFormSubmit(e) { e.preventDefault(); const form = budgetApp.dom; const amount = parseInt(form.amountInput.value); if (!amount || amount <= 0 || !form.textInput.value) { alert("금액과 내용을 올바르게 입력해주세요."); return; } const type = document.querySelector('.transaction-type-btn.bg-primary').dataset.type; const newTx = { id: `tx${Date.now()}`, type, amount, date: form.dateInput.value, category: form.categorySelect.value, text: form.textInput.value }; budgetApp.core.addTransaction(newTx); alert("저장되었습니다."); budgetApp.ui.showSection('dashboard'); },
-        handleListClick(e) {
-            const editBtn = e.target.closest('.edit-btn');
-            if (editBtn) {
-                alert("수정 기능은 현재 개발 중입니다. '추가' 탭에서 새 내역을 작성해주세요.");
-            }
-        },
-        handleTypeChange(e) { const selectedType = e.target.dataset.type; this.setActiveTypeButton(selectedType, '.transaction-type-btn'); budgetApp.ui.updateCategoryOptions(selectedType); },
-        setActiveTypeButton(type, selector) { document.querySelectorAll(selector).forEach(btn => { btn.classList.toggle('bg-primary', btn.dataset.type === type); btn.classList.toggle('text-white', btn.dataset.type === type); btn.classList.toggle('text-gray-600', btn.dataset.type !== type); }); },
-        handleFilterClick(e) { const btn = e.target.closest('button.filter-btn'); if(!btn) return; budgetApp.dom.filterContainer.querySelectorAll('.filter-btn').forEach(b => { b.classList.replace('bg-primary', 'bg-gray-200'); b.classList.replace('text-white','text-gray-700'); }); btn.classList.replace('bg-gray-200','bg-primary'); btn.classList.replace('text-gray-700','text-white'); budgetApp.state.activeFilter = btn.dataset.filter; budgetApp.ui.render.transactions(); },
+            handleTypeChange(e) { const selectedType = e.target.dataset.type; this.setActiveTypeButton(selectedType); budgetApp.ui.updateCategoryOptions(selectedType); },
+            setActiveTypeButton(type) { document.querySelectorAll('.transaction-type-btn').forEach(btn => { btn.classList.toggle('bg-primary', btn.dataset.type === type); btn.classList.toggle('text-white', btn.dataset.type === type); btn.classList.toggle('text-gray-600', btn.dataset.type !== type); }); },
+            handleFilterClick(e) { const btn = e.target.closest('button.filter-btn'); if(!btn) return; budgetApp.dom.filterContainer.querySelectorAll('.filter-btn').forEach(b => { b.classList.replace('bg-primary', 'bg-gray-200'); b.classList.replace('text-white','text-gray-700'); }); btn.classList.replace('bg-gray-200','bg-primary'); btn.classList.replace('text-gray-700','text-white'); budgetApp.state.activeFilter = btn.dataset.filter; budgetApp.ui.render.transactions(); },
 
-        handleAiFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                budgetApp.state.aiImageBase64 = e.target.result.split(',')[1];
-                budgetApp.dom.aiImagePreview.src = e.target.result;
-                budgetApp.dom.aiImagePreviewContainer.classList.remove('hidden');
-                budgetApp.dom.aiUploadLabel.textContent = file.name;
-                budgetApp.dom.aiAnalyzeBtn.disabled = false;
-                budgetApp.dom.aiStatusContainer.innerHTML = '';
-            };
-            reader.readAsDataURL(file);
-        },
+            handleAiFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    budgetApp.state.aiImageBase64 = e.target.result.split(',')[1];
+                    budgetApp.dom.aiImagePreview.src = e.target.result;
+                    budgetApp.dom.aiImagePreviewContainer.classList.remove('hidden');
+                    budgetApp.dom.aiUploadLabel.textContent = file.name;
+                    budgetApp.dom.aiAnalyzeBtn.disabled = false;
+                    budgetApp.dom.aiStatusContainer.innerHTML = '';
+                };
+                reader.readAsDataURL(file);
+            },
 
-        async handleAiAnalyzeClick() {
-            if (!budgetApp.state.aiImageBase64) { alert("분석할 이미지를 먼저 선택해주세요."); return; }
-            const statusContainer = budgetApp.dom.aiStatusContainer;
-            statusContainer.innerHTML = `<div class="flex items-center justify-center p-4"><div class="loader"></div><p class="ml-4 text-gray-600">AI가 이미지를 분석 중입니다...</p></div>`;
-            budgetApp.dom.aiAnalyzeBtn.disabled = true;
+            async handleAiAnalyzeClick() {
+                if (!budgetApp.state.aiImageBase64) { alert("분석할 이미지를 먼저 선택해주세요."); return; }
+                const statusContainer = budgetApp.dom.aiStatusContainer;
+                statusContainer.innerHTML = `<div class="flex items-center justify-center p-4"><div class="loader"></div><p class="ml-4 text-gray-600">AI가 이미지를 분석 중입니다...</p></div>`;
+                budgetApp.dom.aiAnalyzeBtn.disabled = true;
 
-            try {
-                const extractedData = await budgetApp.api.analyzeReceiptImage(budgetApp.state.aiImageBase64);
-                if (!extractedData || extractedData.length === 0) { statusContainer.innerHTML = `<p class="text-center text-red-500">이미지에서 거래 내역을 찾을 수 없습니다.</p>`; return; }
-                this.displayAiResults(extractedData);
-            } catch (error) {
-                statusContainer.innerHTML = `<p class="text-center text-red-500">분석 중 오류가 발생했습니다: ${error.message}</p>`;
-            } finally {
-                 budgetApp.dom.aiAnalyzeBtn.disabled = false;
-            }
-        },
+                try {
+                    const extractedData = await budgetApp.api.analyzeReceiptImage(budgetApp.state.aiImageBase64);
+                    if (!extractedData || extractedData.length === 0) { statusContainer.innerHTML = `<p class="text-center text-red-500">이미지에서 거래 내역을 찾을 수 없습니다.</p>`; return; }
+                    this.displayAiResults(extractedData);
+                } catch (error) {
+                    statusContainer.innerHTML = `<p class="text-center text-red-500">분석 중 오류가 발생했습니다: ${error.message}</p>`;
+                } finally {
+                     budgetApp.dom.aiAnalyzeBtn.disabled = false;
+                }
+            },
 
-        displayAiResults(data) {
-            const statusContainer = budgetApp.dom.aiStatusContainer;
-            let resultsHtml = `<h3 class="font-semibold mb-2">분석 결과 (${data.length}개)</h3><div class="space-y-2">`;
-            data.forEach((item, index) => {
-                const categoryId = this.findCategoryId(item.category_guess, 'expense');
-                const category = budgetApp.config.categories.expense.find(c => c.id === categoryId) || {};
-                resultsHtml += `
+            displayAiResults(data) {
+                const statusContainer = budgetApp.dom.aiStatusContainer;
+                let resultsHtml = `<h3 class="font-semibold mb-2">분석 결과 (${data.length}개)</h3><div class="space-y-2">`;
+                data.forEach((item, index) => {
+                    const categoryId = this.findCategoryIdByText(item.category_guess, 'expense');
+                    const category = budgetApp.config.categories.expense.find(c => c.id === categoryId) || {};
+                    resultsHtml += `
                     <div class="bg-gray-50 p-3 rounded-lg flex items-center" data-index="${index}">
                         <div class="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-gray-200 rounded-lg mr-3"><i class="ri-${category.icon}-line text-gray-700"></i></div>
                         <div class="flex-1 text-sm">
@@ -381,51 +584,51 @@ const budgetApp = {
                             <p class="text-gray-500">${item.date} / ₩${item.amount.toLocaleString()} / ${category.text}</p>
                         </div>
                     </div>`;
-            });
-            resultsHtml += `</div><button id="add-ai-results-btn" class="w-full mt-4 bg-secondary text-white font-semibold py-3 rounded-lg !rounded-button">선택한 내역 추가하기</button>`;
-            statusContainer.innerHTML = resultsHtml;
+                });
+                resultsHtml += `</div><button id="add-ai-results-btn" class="w-full mt-4 bg-secondary text-white font-semibold py-3 rounded-lg !rounded-button">선택한 내역 추가하기</button>`;
+                statusContainer.innerHTML = resultsHtml;
 
-            document.getElementById('add-ai-results-btn').addEventListener('click', () => {
-                this.addAiResults(data);
-            });
-        },
+                document.getElementById('add-ai-results-btn').addEventListener('click', () => {
+                    this.addAiResults(data);
+                });
+            },
 
-        addAiResults(data) {
-            let addedCount = 0;
-            data.forEach(item => {
-                const newTx = {
-                    id: `tx${Date.now() + Math.random()}`,
-                    type: 'expense',
-                    amount: item.amount,
-                    date: item.date,
-                    text: item.description,
-                    category: this.findCategoryId(item.category_guess, 'expense')
-                };
-                const isDuplicate = budgetApp.state.transactions.some(t => t.date === newTx.date && t.amount === newTx.amount && t.text === newTx.text);
-                if (!isDuplicate) { budgetApp.core.addTransaction(newTx); addedCount++; }
-            });
-            if (addedCount > 0) { alert(`${addedCount}개의 새로운 거래 내역을 추가했습니다.`); budgetApp.ui.showSection('transactions'); } 
-            else { alert("추가할 새로운 거래 내역이 없습니다. (중복 내역 제외)"); }
-            budgetApp.dom.aiStatusContainer.innerHTML = '';
-            budgetApp.dom.aiImagePreviewContainer.classList.add('hidden');
-            budgetApp.dom.aiUploadLabel.textContent = '영수증/내역 이미지 선택';
-        },
+            addAiResults(data) {
+                let addedCount = 0;
+                data.forEach(item => {
+                    const newTx = {
+                        id: `tx${Date.now() + Math.random()}`,
+                        type: 'expense',
+                        amount: item.amount,
+                        date: item.date,
+                        text: item.description,
+                        category: this.findCategoryIdByText(item.category_guess, 'expense')
+                    };
+                    const isDuplicate = budgetApp.state.transactions.some(t => t.date === newTx.date && t.amount === newTx.amount && t.text === newTx.text);
+                    if (!isDuplicate) { budgetApp.core.addTransaction(newTx); addedCount++; }
+                });
+                if (addedCount > 0) { alert(`${addedCount}개의 새로운 거래 내역을 추가했습니다.`); budgetApp.ui.showSection('transactions'); }
+                else { alert("추가할 새로운 거래 내역이 없습니다. (중복 내역 제외)"); }
+                budgetApp.dom.aiStatusContainer.innerHTML = '';
+                budgetApp.dom.aiImagePreviewContainer.classList.add('hidden');
+                budgetApp.dom.aiUploadLabel.textContent = '영수증/내역 이미지 선택';
+            },
 
-        findCategoryId(categoryText, type) {
-            if (!categoryText) return 'other';
-            const categories = budgetApp.config.categories[type];
-            for (const category of categories) {
-                for (const keyword of category.keywords) {
-                    if (categoryText.includes(keyword)) { return category.id; }
+            findCategoryIdByText(categoryText, type) {
+                if (!categoryText) return 'other';
+                const categories = budgetApp.config.categories[type];
+                for (const category of categories) {
+                    for (const keyword of category.keywords) {
+                        if (categoryText.includes(keyword)) { return category.id; }
+                    }
                 }
+                const found = categories.find(c => c.text === categoryText);
+                return found ? found.id : (type === 'expense' ? 'other' : 'other_income');
             }
-            const found = categories.find(c => c.text === categoryText);
-            return found ? found.id : (type === 'expense' ? 'other' : 'other_income');
         }
-    }
-};
+    };
 
-document.addEventListener('DOMContentLoaded', () => budgetApp.init());
-</script>
+    document.addEventListener('DOMContentLoaded', () => budgetApp.init());
+    </script>
 </body>
 </html>
